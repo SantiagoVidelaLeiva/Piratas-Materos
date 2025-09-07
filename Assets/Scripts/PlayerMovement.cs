@@ -44,7 +44,7 @@ public class PlayerMovement : MonoBehaviour
     bool _isRunning;
     float _lastHorizontalSpeed;
 
-    float fallTimer;
+
 
     // ─────────────────────────────────── Lifecycle ─────────────────────────────────────
     void Awake()
@@ -70,9 +70,7 @@ public class PlayerMovement : MonoBehaviour
         ApplyGravity(); 
         Move();
 
-        if (!_cc.isGrounded && _velocity.y < -0.2f) fallTimer += Time.deltaTime;
-        else fallTimer = 0f;
-        _isFalling = fallTimer > 0.05f;
+
     }
 
     void LateUpdate()
@@ -138,8 +136,7 @@ public class PlayerMovement : MonoBehaviour
         _anim.SetBool("IsCrouching", _isCrouching);
         _anim.SetBool("IsGrounded", _cc.isGrounded);
 
-        _anim.SetBool("IsFalling", _isFalling);
-        _anim.SetFloat("VerticalSpeed", _velocity.y);
+
     }
 
     void UpdateState()
