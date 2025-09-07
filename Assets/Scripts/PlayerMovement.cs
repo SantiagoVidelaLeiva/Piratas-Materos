@@ -45,9 +45,7 @@ public class PlayerMovement : MonoBehaviour
     float _lastHorizontalSpeed;
 
     float fallTimer;
-    //float _fallDetectTimer;                   // acumula tiempo “en caída”
-    //[SerializeField] float _fallSpeedThresh = -0.2f; // umbral de velocidad para considerar caída
-    //[SerializeField] float _fallTimeThresh = 0.05f;
+
     // ─────────────────────────────────── Lifecycle ─────────────────────────────────────
     void Awake()
     {
@@ -71,15 +69,7 @@ public class PlayerMovement : MonoBehaviour
         Run();
         ApplyGravity(); 
         Move();
-        //Debug.Log("is grounded "+ _isFalling);
-        //if (!_cc.isGrounded && _velocity.y < _fallSpeedThresh)
-        //    _fallDetectTimer += Time.deltaTime;
-        //else
-        //    _fallDetectTimer = 0f;
 
-        //_isFalling = _fallDetectTimer > _fallTimeThresh;
-
-        //Debug.Log("is grounded " + _isFalling);
         if (!_cc.isGrounded && _velocity.y < -0.2f) fallTimer += Time.deltaTime;
         else fallTimer = 0f;
         _isFalling = fallTimer > 0.05f;
