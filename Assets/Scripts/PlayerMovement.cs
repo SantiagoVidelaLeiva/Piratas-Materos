@@ -94,7 +94,7 @@ public class PlayerMovement : MonoBehaviour
 
         // Dirección relativa a la cámara. Quiero mover mi personaje con respecto a mi camara
         Vector3 camForward = _camOrbit.ForwardOnPlane(); // Llamo al metodo para conseguir X , Z de la camara (0 , 0 , 1f) si miro al norte . Es una sola direccion
-        Vector3 camRight = new Vector3(camForward.z, 0, -camForward.x); // Cuenta matematica para girar un vector perpendicularmente 90º y asi conseguir movimiento de derecha a izquierda con respecto a mi camara
+        Vector3 camRight = Vector3.Cross(Vector3.up, camForward).normalized; // Cross da el producto cruzado, es una cuenta matematica para girar un vector perpendicularmente 90º y asi conseguir movimiento de derecha a izquierda con respecto a mi camara
         Vector3 moveDirection = camForward * input.z + camRight * input.x; // Lo sumo para ir en diagonal pero siempre con respecto a la camara
 
         // Velocidad

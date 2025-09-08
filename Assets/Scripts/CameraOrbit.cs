@@ -1,4 +1,5 @@
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class CameraOrbit : MonoBehaviour
 {
@@ -18,6 +19,11 @@ public class CameraOrbit : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        if (!_target)
+        {
+            GameObject player = GameObject.FindWithTag("Player");
+            if (player) _target = player.transform;
+        }
     }
 
     void LateUpdate()
