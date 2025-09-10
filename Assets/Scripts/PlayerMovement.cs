@@ -1,16 +1,16 @@
 ﻿using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviour , IEyeHeightProvider
 {
     // ─────────────────────────── Configuración / Referencias ───────────────────────────
     [Header("Facing")]
-    [SerializeField] CameraOrbit _camOrbit;                 
+    [SerializeField] CameraOrbit _camOrbit;
     [SerializeField] float _faceLerp = 8f;                  // Suaviza el movimiento
     [SerializeField] Transform _target;
 
     [Header("Animación")]
-    [SerializeField] Animator _anim;              
+    [SerializeField] Animator _anim;
     [SerializeField] bool _rotateToMoveDir = true;
 
     [Header("Visual (offset)")]
@@ -36,11 +36,15 @@ public class PlayerMovement : MonoBehaviour
     KeyCode _crouchKey = KeyCode.LeftControl;
     [SerializeField] float _standingHeight = 1.8f;
     [SerializeField] float _crouchingHeight = 1.2f;
+    public bool IsCrouching { get; private set; }
+
+
+    public float GetEyeHeight() => IsCrouching ? _crouchingHeight : _standingHeight;
 
     // ──────────────────────────────── Estado runtime ───────────────────────────────────
     enum MovementState { Walk, Run, Crouch }
     MovementState _state;
-    bool _isCrouching;
+    
     bool _isRunning;
     float _lastHorizontalSpeed;
 
@@ -56,7 +60,7 @@ public class PlayerMovement : MonoBehaviour
         if (!_anim) _anim = GetComponentInChildren<Animator>();
         if (_anim) _anim.applyRootMotion = false;
 
-        if (!_visual && _anim) _visual = _anim.transform;   
+        if (!_visual && _anim) _visual = _anim.transform;
         if (_visual) _visual.localPosition = new Vector3(0f, _visualYOffset, 0f);
 
     }
@@ -67,7 +71,7 @@ public class PlayerMovement : MonoBehaviour
         Crouch();
         Jump();
         Run();
-        ApplyGravity(); 
+        ApplyGravity();
         Move();
 
 
@@ -115,7 +119,7 @@ public class PlayerMovement : MonoBehaviour
         if (_cc.isGrounded && _rotateToMoveDir && moveDirection.sqrMagnitude > 0.0001f)
         {
             Quaternion targetRot = Quaternion.LookRotation(moveDirection, Vector3.up);
-            transform.rotation =  Quaternion.Slerp(transform.rotation, targetRot, _faceLerp * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, _faceLerp * Time.deltaTime);
         }
     }
 
@@ -133,7 +137,7 @@ public class PlayerMovement : MonoBehaviour
         float dampTime = _cc.isGrounded ? 0.12f : 0f;   // suave en suelo, instantáneo en aire
         _anim.SetFloat("Speed01", target, dampTime, Time.deltaTime);
 
-        _anim.SetBool("IsCrouching", _isCrouching);
+        _anim.SetBool("IsCrouching", IsCrouching);
         _anim.SetBool("IsGrounded", _cc.isGrounded);
 
 
@@ -141,7 +145,7 @@ public class PlayerMovement : MonoBehaviour
 
     void UpdateState()
     {
-        if (_isCrouching)
+        if (IsCrouching)
             _state = MovementState.Crouch;
         else if (_isRunning)
             _state = MovementState.Run;
@@ -151,7 +155,7 @@ public class PlayerMovement : MonoBehaviour
 
     float GetCurrentSpeed() // Metodo para conseguir la velocidad actual del personaje
     {
-        switch(_state)
+        switch (_state)
         {
             case MovementState.Crouch:
                 return _crouchSpeed;        // No hay break por que el return me devuelve lo esperado y sale del switch
@@ -167,13 +171,13 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetKeyDown(_crouchKey))
         {
-            _isCrouching = !_isCrouching; // toggle
-            float h = _isCrouching ? _crouchingHeight : _standingHeight;
+            IsCrouching = !IsCrouching; // toggle
+            float h = IsCrouching ? _crouchingHeight : _standingHeight;
             _cc.height = h;
             _cc.center = new Vector3(0, h / 2f, 0);
         }
     }
-    
+
     void Run()
     {
         if (!_cc.isGrounded) return;
@@ -183,7 +187,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Jump() // No creo que se use en este juego
     {
-        if (_cc.isGrounded && Input.GetKeyDown(KeyCode.Space) && !_isCrouching)
+        if (_cc.isGrounded && Input.GetKeyDown(KeyCode.Space) && !IsCrouching)
         {
             _velocity.y = Mathf.Sqrt(2f * _jumpHeight * -_gravity);
         }
@@ -192,9 +196,10 @@ public class PlayerMovement : MonoBehaviour
     void ApplyGravity()
     {
         if (_cc.isGrounded && _velocity.y < 0) // Velocity siempre es negativo por gravity.
-                _velocity.y = -2f;           // Si estas tocando el suelo te deja pegado a el con -2
+            _velocity.y = -2f;           // Si estas tocando el suelo te deja pegado a el con -2
         _velocity.y += _gravity * Time.deltaTime;
     }
+
 
 
 }
