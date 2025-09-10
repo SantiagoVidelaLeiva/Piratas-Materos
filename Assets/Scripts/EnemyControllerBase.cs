@@ -1,0 +1,592 @@
+﻿using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.AI;
+
+[RequireComponent(typeof(NavMeshAgent))]
+public class EnemyControllerBase : MonoBehaviour 
+{
+    public enum EnemyState { Patrolling, Suspicious, Danger }
+
+    [Header("References")]
+    [SerializeField] private NavMeshAgent agent;
+    [SerializeField] private Animator animator;         // Opcional
+    [SerializeField] private Transform eyes;            // Punto de visión (si null usa transform)
+    [SerializeField] private Transform player;          // *** ÚNICO objetivo ***
+
+    [Header("Patrol")]
+    [Tooltip("Puntos de patrulla en orden. Si está vacío, el enemigo se queda en su lugar.")]
+    [SerializeField] private Transform[] patrolPoints;
+    [SerializeField] private float waypointTolerance = 0.6f;
+    [SerializeField] private bool loopPatrol = true;
+    private int _patrolIndex;
+
+    [Header("Suspicion (Simple)")]
+    [Tooltip("Puntos de sospecha opcionales. Si están vacíos, el enemigo escanea en el LKP.")]
+    [SerializeField] private Transform[] suspicionPoints;
+
+    [Tooltip("Duración del barrido izq/der al llegar al punto de sospecha.")]
+    [SerializeField, Min(0.1f)] private float scanDuration = 5f;
+
+    [Tooltip("Amplitud del barrido en grados (izq/der).")]
+    [SerializeField, Range(5f, 120f)] private float scanYawAmplitude = 70f;
+
+    [Tooltip("Ciclos de oscilación por segundo (cómo de rápido va izq/der).")]
+    [SerializeField, Min(0.1f)] private float scanOscillationsPerSecond = 0.2f;
+
+    [Header("Perception")]
+    [Tooltip("Capas que bloquean la visión (paredes, props).")]
+    [SerializeField] private LayerMask obstacleMask;    // por defecto todo
+    [Tooltip("Distancia máxima de visión.")]
+    [SerializeField, Min(0f)] private float visionRange = 20f;
+    [Tooltip("Apertura del cono de visión en grados.")]
+    [SerializeField, Range(1f, 180f)] private float visionAngle = 90f;
+    [Tooltip("Altura de los ojos si 'eyes' es null (offset local en Y).")]
+    [SerializeField] private float eyesHeight = 1.7f;
+
+    [Header("Suspicion/Search")]
+
+    [Tooltip("Tiempo que puede perder de vista al objetivo antes de salir de Danger.")]
+    [SerializeField, Min(0f)] private float lostSightGrace = 2f;
+    [Tooltip("Radio de búsqueda cuando llega al punto sospechoso.")]
+    [SerializeField, Min(0f)] private float searchRadius = 5f;
+
+
+    [Header("Combat")]
+    [SerializeField, Min(0f)] private float attackRange = 1.8f;
+    [SerializeField, Min(0f)] private float attackCooldown = 1.2f;
+    [SerializeField] private int attackDamage = 10;
+
+    [Header("Speeds")]
+    [SerializeField, Min(0f)] private float patrolSpeed = 2.0f;
+    [SerializeField, Min(0f)] private float chaseSpeed = 3.5f;
+    [SerializeField, Min(0f)] private float turnSpeed = 360f;
+
+    [Header("Debug")]
+    [SerializeField] private bool drawGizmos = true;
+
+    [Header("Proximity / Awareness")]
+    [Tooltip("Radio de detección cercana: si el jugador entra, se detecta aunque esté fuera del cono.")]
+    [SerializeField, Min(0f)] private float proximityRadius = 5f;
+
+
+
+
+
+
+
+
+    // --- Runtime ---
+    private EnemyState _state = EnemyState.Patrolling;
+    private Vector3 _lastKnownPos;      // Última posición conocida/ruido
+    private float _lostSightTimer;
+    private float _lastAttackTime;
+
+
+    private bool _scanActive;
+    private float _scanTimer;
+    private float _scanBaseYaw;
+    private bool _movingToSuspicionPoint;
+
+
+
+    // Pendientes por visitar en este ciclo de sospecha
+    List<Transform> _suspiciousLeft;
+    // Solo informativo, por si lo querés usar
+    Transform _currentSusTarget;
+
+    void Reset()
+    {
+        agent = GetComponent<NavMeshAgent>();
+    }
+
+    void Awake()
+    {
+        if (!agent) agent = GetComponent<NavMeshAgent>();
+        if (!animator) animator = GetComponentInChildren<Animator>();
+
+        SetState(EnemyState.Patrolling);
+        if (patrolPoints != null && patrolPoints.Length > 0)
+            agent.SetDestination(patrolPoints[_patrolIndex].position);
+        int playerLayer = LayerMask.NameToLayer("Player");
+        if (playerLayer >= 0) // por si el layer no existe (NameToLayer devolvería -1)
+        {
+            obstacleMask &= ~(1 << playerLayer);
+        }
+    }
+
+    void Update()
+    {
+        // Percepción: chequea sólo al jugador
+        bool seesPlayer = TrySeePlayer(out Vector3 seenPos);
+
+        // Si no lo veo por cono, pruebo detección cercana (sensing)
+        if (!seesPlayer && TryNearDetectPlayer(out Vector3 sensedPos))
+        {
+            seesPlayer = true;
+            seenPos = sensedPos; // tratar como visto/detectado
+        }
+
+        switch (_state)
+        {
+            case EnemyState.Patrolling:
+                TickPatrolling(seesPlayer, seenPos);
+                Debug.Log("Patrol");
+                break;
+
+            case EnemyState.Suspicious:
+                TickSuspicious(seesPlayer, seenPos);
+                Debug.Log("Sospechoso");
+                break;
+
+            case EnemyState.Danger:
+                TickDanger(seesPlayer, seenPos);
+                Debug.Log("Danger");
+                break;
+        }
+
+        UpdateAnimator();
+    }
+
+    #region State Ticks
+    private void TickPatrolling(bool seesPlayer, Vector3 seenPos)
+    {
+        agent.speed = patrolSpeed;
+
+        if (seesPlayer)
+        {
+            _lastKnownPos = seenPos;
+            SetState(EnemyState.Danger);
+            return;
+        }
+
+        if (patrolPoints != null && patrolPoints.Length > 0)
+        {
+            if (!agent.pathPending && agent.remainingDistance <= waypointTolerance)
+                AdvancePatrol();
+        }
+        //FaceForwardSlowly();   // Usalo si queres que patrulle girando en 360º
+
+    }
+
+    private void TickSuspicious(bool seesPlayer, Vector3 seenPos)
+    {
+        if (seesPlayer)
+        {
+            _lastKnownPos = seenPos;
+            SetState(EnemyState.Danger);
+            return;
+        }
+
+        // Fase 1: ir al punto (suspicionPoint más cercano o LKP)
+        if (_movingToSuspicionPoint)
+        {
+            agent.speed = patrolSpeed * 1.3f;
+
+            if (!agent.pathPending && agent.remainingDistance <= waypointTolerance)
+            {
+                // Llegamos: arrancar escaneo
+                _movingToSuspicionPoint = false;
+                _scanActive = true;
+                _scanTimer = 0f;
+                agent.isStopped = true;
+                agent.updateRotation = false;
+                _scanBaseYaw = transform.eulerAngles.y; // referencia para oscilar
+            }
+            return;
+        }
+
+        // Fase 2: escaneo in-situ (izq/der) por un tiempo y volver a patrullar
+        if (_scanActive)
+        {
+            _scanTimer += Time.deltaTime;
+            // Oscilación senoidal: base ± amplitud
+            float angle = _scanBaseYaw + Mathf.Sin(_scanTimer * 2f * Mathf.PI * scanOscillationsPerSecond) * scanYawAmplitude;
+            transform.rotation = Quaternion.Euler(0f, angle, 0f);
+
+            if (_scanTimer >= scanDuration)
+            {
+                _scanActive = false;             // <- salgo del modo escaneo
+                agent.isStopped = false;
+                agent.updateRotation = true;
+                return;
+            }
+            return;
+
+        }
+
+        if (!_scanActive && (_suspiciousLeft != null && _suspiciousLeft.Count > 0))
+        {
+            Transform next = PopNearest(_suspiciousLeft, transform.position);
+            if (next != null)
+            {
+                _currentSusTarget = next;
+                _movingToSuspicionPoint = true;
+
+                agent.isStopped = false;
+                agent.updateRotation = true;
+                agent.SetDestination(next.position);
+                return;
+            }
+
+            // Si todos cayeron nulos/inactivos, seguís el flujo normal (quedarte/volver a patrulla, etc.)
+        }
+        else
+        {
+            agent.isStopped = false;
+            agent.updateRotation = true;
+            _scanActive = false;
+            SetState(EnemyState.Patrolling);
+        }
+
+        // Fallback (no debería pasar mucho): mantener una rotación lenta
+        //FaceForwardSlowly();
+    }
+
+
+
+    private void TickDanger(bool seesPlayer, Vector3 seenPos)
+    {
+        agent.speed = chaseSpeed;
+
+        if (seesPlayer)
+        {
+            _lastKnownPos = seenPos;
+            _lostSightTimer = 0f;
+        }
+        else
+        {
+            _lostSightTimer += Time.deltaTime;
+            if (_lostSightTimer >= lostSightGrace)
+            {
+                SetState(EnemyState.Suspicious);
+                return;
+            }
+        }
+
+        // Perseguir hacia player si lo veo, sino al último punto conocido
+        Vector3 chasePos = seesPlayer && player ? player.position : _lastKnownPos;
+        agent.SetDestination(chasePos);
+
+        // Ataque si está a rango y con LdV
+        if (player)
+        {
+            float dist = Vector3.Distance(transform.position, player.position);
+            if (dist <= attackRange && HasLineOfSightTo(player, out _))
+            {
+                FaceTowards(player.position);
+                TryAttack();
+            }
+        }
+    }
+
+    private void SetState(EnemyState next)
+    {
+        _state = next;
+
+        switch (_state)
+        {
+            case EnemyState.Patrolling:
+                agent.stoppingDistance = 0f;
+                _lostSightTimer = 0f;
+                if (patrolPoints != null && patrolPoints.Length > 0)
+                    agent.SetDestination(patrolPoints[_patrolIndex].position);
+                break;
+
+            case EnemyState.Suspicious:
+                {
+                    agent.stoppingDistance = 0.1f;
+
+                    _scanActive = false;
+                    _scanTimer = 0f;
+
+                    // Construye la lista de puntos válidos
+                    _suspiciousLeft = null;
+                    _currentSusTarget = null;
+
+                    if (suspicionPoints != null && suspicionPoints.Length > 0)
+                    {
+                        _suspiciousLeft = new List<Transform>(suspicionPoints.Length);
+                        foreach (var t in suspicionPoints)
+                            if (t && t.gameObject.activeInHierarchy)
+                                _suspiciousLeft.Add(t);
+                    }
+
+                    // **PRIORIDAD**: si hay LKP, ir primero ahí. Si no hay LKP, recién ahí elegir el nearest.
+                    Vector3 targetPos;
+                    if (_lastKnownPos != Vector3.zero)
+                    {
+                        targetPos = _lastKnownPos;                  // <- primero LKP
+                        _currentSusTarget = null;                   // informativo
+                    }
+                    else
+                    {
+                        Transform first = (_suspiciousLeft != null) ? PopNearest(_suspiciousLeft, transform.position) : null;
+                        _currentSusTarget = first;
+                        targetPos = (first != null) ? first.position : transform.position;
+                    }
+                    _movingToSuspicionPoint = true;
+                    agent.isStopped = false;
+                    agent.updateRotation = true;
+                    agent.SetDestination(targetPos);
+                    break;
+                }
+
+            case EnemyState.Danger:
+                agent.stoppingDistance = Mathf.Max(attackRange * 0.8f, 0.1f);
+                _lostSightTimer = 0f;
+                break;
+        }
+
+        if (animator)
+        {
+            animator.SetBool("IsPatrolling", _state == EnemyState.Patrolling);
+            animator.SetBool("IsSuspicious", _state == EnemyState.Suspicious);
+            animator.SetBool("IsDanger", _state == EnemyState.Danger);
+        }
+    }
+
+
+    private bool TrySeePlayer(out Vector3 seenPos)
+    {
+        seenPos = Vector3.zero;
+        if (!player) return false;
+
+        Vector3 origin = GetEyesWorldPos();
+        Vector3 target = GetTargetAimPoint(player);
+        Vector3 dir = target - origin;
+
+        float dist = dir.magnitude;
+        if (dist > visionRange) return false;
+
+        dir /= (dist > 0.0001f ? dist : 1f);
+
+        // Chequeo de cono (ángulo)
+        float angle = Vector3.Angle(GetForward(), dir);
+        if (angle > visionAngle * 0.5f) return false;
+
+        // LdV mediante raycast
+        if (Physics.Raycast(origin, dir, out RaycastHit hit, dist + 0.1f, obstacleMask, QueryTriggerInteraction.Ignore))
+        {
+            // Si pega algo de obstacleMask antes que el player, no lo ve
+            // (Como obstacleMask no incluye al player, este raycast es suficiente)
+            return false;
+        }
+
+        seenPos = target;
+        return true;
+    }
+    Transform PopNearest(List<Transform> list, Vector3 from)
+    {
+        if (list == null || list.Count == 0) return null;
+
+        // Limpia nulos/inactivos
+        for (int i = list.Count - 1; i >= 0; --i)
+            if (!list[i] || !list[i].gameObject.activeInHierarchy)
+                list.RemoveAt(i);
+
+        int bestIdx = -1;
+        float best = float.MaxValue;
+
+        for (int i = 0; i < list.Count; i++)
+        {
+            Transform t = list[i];
+            float d = (t.position - from).sqrMagnitude;
+            if (d < best) { best = d; bestIdx = i; }
+        }
+
+        if (bestIdx == -1) return null;
+
+        Transform nearest = list[bestIdx];
+        list.RemoveAt(bestIdx);          // <- lo DESCARTA de pendientes
+        return nearest;                   // <- lo devolvemos como destino actual
+    }
+    private bool TryNearDetectPlayer(out Vector3 sensedPos)
+    {
+        sensedPos = Vector3.zero;
+        if (!player) return false;
+
+        Vector3 origin = GetEyesWorldPos();                // podés usar transform.position si preferís
+        Vector3 target = GetTargetAimPoint(player);
+        Vector3 toPlayer = target - origin;
+        float dist = toPlayer.magnitude;
+
+        if (dist > proximityRadius) return false;
+
+        sensedPos = target;                                // lo “sentimos” (ruido/pasos/respiración)
+        return true;
+    }
+    private void AdvancePatrol()
+    {
+        if (patrolPoints == null || patrolPoints.Length == 0) return;
+
+        _patrolIndex++;
+        if (_patrolIndex >= patrolPoints.Length)
+            _patrolIndex = loopPatrol ? 0 : patrolPoints.Length - 1;
+
+        agent.SetDestination(patrolPoints[_patrolIndex].position);
+    }
+    private Vector3 GetTargetAimPoint(Transform t)
+    {
+        float h = 1.8f;
+
+        var aim = t.GetComponentInParent<IEyeHeightProvider>();
+        if (aim != null) h = aim.GetEyeHeight();
+
+        return t.position + Vector3.up * (h);
+    }
+
+    private bool HasLineOfSightTo(Transform t, out Vector3 hitPoint)
+    {
+        Vector3 origin = GetEyesWorldPos();
+        Vector3 target = GetTargetAimPoint(t);
+        Vector3 dir = (target - origin);
+        float dist = dir.magnitude;
+        dir /= (dist > 0.0001f ? dist : 1f);
+
+        if (Physics.Raycast(origin, dir, out RaycastHit hit, dist + 0.1f, obstacleMask, QueryTriggerInteraction.Ignore))
+        {
+            hitPoint = hit.point;
+            return false;
+        }
+
+        hitPoint = target;
+        return true;
+    }
+
+
+
+    private Vector3 GetEyesWorldPos()
+    {
+        if (eyes != null) return eyes.position;
+        return transform.position + Vector3.up * eyesHeight;
+    }
+
+    private Vector3 GetForward()
+    {
+        return (eyes ? eyes.forward : transform.forward).normalized;
+    }
+
+
+
+    #region Combat
+    private void TryAttack()
+    {
+        if (Time.time - _lastAttackTime < attackCooldown) return;
+        _lastAttackTime = Time.time;
+
+        if (animator)
+            animator.SetTrigger("Attack");
+        else
+            ApplyDamageToPlayer();
+    }
+
+
+    public void AnimEvent_DealDamage()
+    {
+        ApplyDamageToPlayer();
+    }
+
+    private void ApplyDamageToPlayer()
+    {
+        if (!player) return;
+
+        // Opción 1: interfaz IDamageable
+        var damageable = player.GetComponent(typeof(IDamageable)) as IDamageable;
+        if (damageable != null)
+        {
+            damageable.TakeDamage(attackDamage);
+            return;
+        }
+
+        // Opción 2: tu Health concreto (reemplazá por tu componente real)
+        // var health = player.GetComponent<Health>();
+        // if (health) health.ApplyDamage(attackDamage);
+    }
+    #endregion
+
+    #region Helpers & State
+    
+
+
+    private void FaceForwardSlowly()   // Usalo si queres que patrulle girando en 360º
+    {
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation,
+            Quaternion.Euler(0f, transform.eulerAngles.y + 60f, 0f),
+            turnSpeed * 0.05f * Time.deltaTime
+        );
+    }
+
+    private void FaceTowards(Vector3 worldPos)
+    {
+        Vector3 dir = (worldPos - transform.position).WithY(0f);
+        if (dir.sqrMagnitude < 0.0001f) return;
+        Quaternion targetRot = Quaternion.LookRotation(dir, Vector3.up);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, turnSpeed * Time.deltaTime);
+    }
+    #endregion
+
+    #region Animator Glue
+    private void UpdateAnimator()
+    {
+        if (!animator) return;
+        float speed = agent ? agent.velocity.magnitude : 0f;
+        animator.SetFloat("Speed", speed);
+    }
+    #endregion
+
+    #region Gizmos
+    private void OnDrawGizmosSelected()
+    {
+        if (!drawGizmos) return;
+
+        // Rango de visión
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(GetEyesWorldPos(), visionRange);
+
+        // Cono de visión (dos rayos límites)
+        Vector3 origin = GetEyesWorldPos();
+        Vector3 fwd = GetForward();
+        float half = visionAngle * 0.5f;
+        Quaternion left = Quaternion.AngleAxis(-half, Vector3.up);
+        Quaternion right = Quaternion.AngleAxis(half, Vector3.up);
+
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawRay(origin, left * fwd * visionRange);
+        Gizmos.DrawRay(origin, right * fwd * visionRange);
+
+        // Último punto conocido
+        if (_lastKnownPos != Vector3.zero)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(_lastKnownPos, 0.3f);
+            Gizmos.DrawWireSphere(_lastKnownPos, searchRadius);
+        }
+        // Radio de proximidad
+        Gizmos.DrawWireSphere(GetEyesWorldPos(), proximityRadius);
+
+
+    }
+    #endregion
+}
+
+/// <summary>
+/// Helpers chiquitos para vectores.
+/// </summary>
+public static class VecExtensions
+{
+    public static Vector3 WithY(this Vector3 v, float y)
+    {
+        v.y = y; return v;
+    }
+}
+
+/// <summary>
+/// Interfaz opcional si ya tenés un sistema de daño.
+/// </summary>
+public interface IDamageable
+{
+    void TakeDamage(int amount);
+}
+
+#endregion
