@@ -1113,13 +1113,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ec095127918e0e4fb3f0ba2d97c39b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _target: {fileID: 0}
-  _targetOffset: {x: 0, y: 1.5, z: 0}
-  _distance: 4
-  _xSpeed: 250
-  _ySpeed: 120
-  _yMin: -35
-  _yMax: 70
+  _target: {fileID: 5780296554870538633}
+  _targetOffset: {x: 0, y: 1.2, z: 0}
+  _distance: 1.5
+  _xSpeed: 200
+  _ySpeed: 100
+  _yMin: -20
+  _yMax: 35
 --- !u!1 &4746013054961311408
 GameObject:
   m_ObjectHideFlags: 0
@@ -2196,6 +2196,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5780296554870538633}
   - component: {fileID: 1806843967646009432}
+  - component: {fileID: 7046293134500902297}
   - component: {fileID: 1561567410244805436}
   m_Layer: 0
   m_Name: Player
@@ -2212,7 +2213,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8048746215496651578}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 18.4, y: 12.1, z: -1.42}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2246,6 +2247,20 @@ CharacterController:
   m_SkinWidth: 0.04
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: -0.01, z: 0}
+--- !u!114 &7046293134500902297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8048746215496651578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82edf6f512224364eab412cb0a764992, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _gravity: -20
+  _jumpHeight: 1.4
 --- !u!114 &1561567410244805436
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2260,7 +2275,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _camOrbit: {fileID: 228997868647215069}
   _faceLerp: 8
-  _target: {fileID: 0}
+  _target: {fileID: 5780296554870538633}
   _anim: {fileID: 0}
   _rotateToMoveDir: 1
   _visual: {fileID: 0}
@@ -2268,11 +2283,10 @@ MonoBehaviour:
   _walkSpeed: 4.5
   _crouchSpeed: 1.2
   _runSpeed: 6.5
-  _gravity: -20
-  _jumpHeight: 1.4
   _isFalling: 0
   _standingHeight: 1.8
   _crouchingHeight: 1.2
+  _playerGravity: {fileID: 0}
 --- !u!1 &8106230026401409809
 GameObject:
   m_ObjectHideFlags: 0
