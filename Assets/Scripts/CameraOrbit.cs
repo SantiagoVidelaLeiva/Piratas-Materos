@@ -8,10 +8,10 @@ public class CameraOrbit : MonoBehaviour
     [SerializeField] Vector3 _targetOffset = new Vector3(0, 1.5f, 0);  // Subo la camara en Y para que este a la altura de la cabeza
 
     [Header("Orbit")]
-    [SerializeField] float _distance = 4f;
-    [SerializeField] float _xSpeed = 250f;
-    [SerializeField] float _ySpeed = 120f;
-    [SerializeField] float _yMin = -35f, _yMax = 70f;
+    [SerializeField] float _distance = 1.2f;
+    [SerializeField] float _xSpeed = 200f;
+    [SerializeField] float _ySpeed = 100f;
+    [SerializeField] float _yMin = -20f, _yMax = 35f;
 
     float _yaw, _pitch;
 
