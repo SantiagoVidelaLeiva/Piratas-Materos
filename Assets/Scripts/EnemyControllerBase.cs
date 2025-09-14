@@ -3,10 +3,16 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class EnemyControllerBase : MonoBehaviour 
+public class EnemyControllerBase : MonoBehaviour , IVisionProvider
 {
+    // ============================
+    //            Types
+    // ============================
     public enum EnemyState { Patrolling, Suspicious, Danger }
 
+    // ============================
+    //        Inspector Fields
+    // ============================
     [Header("References")]
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private Animator animator;         // Opcional
@@ -44,12 +50,10 @@ public class EnemyControllerBase : MonoBehaviour
     [SerializeField] private float eyesHeight = 1.7f;
 
     [Header("Suspicion/Search")]
-
     [Tooltip("Tiempo que puede perder de vista al objetivo antes de salir de Danger.")]
     [SerializeField, Min(0f)] private float lostSightGrace = 2f;
     [Tooltip("Radio de búsqueda cuando llega al punto sospechoso.")]
     [SerializeField, Min(0f)] private float searchRadius = 5f;
-
 
     [Header("Combat")]
     [SerializeField, Min(0f)] private float attackRange = 1.8f;
@@ -61,60 +65,60 @@ public class EnemyControllerBase : MonoBehaviour
     [SerializeField, Min(0f)] private float chaseSpeed = 3.5f;
     [SerializeField, Min(0f)] private float turnSpeed = 360f;
 
-    [Header("Debug")]
-    [SerializeField] private bool drawGizmos = true;
-
     [Header("Proximity / Awareness")]
     [Tooltip("Radio de detección cercana: si el jugador entra, se detecta aunque esté fuera del cono.")]
     [SerializeField, Min(0f)] private float proximityRadius = 5f;
 
+    [Header("Debug")]
+    [SerializeField] private bool drawGizmos = true;
 
-
-
-
-
-
-
-    // --- Runtime ---
+    // ============================
+    //        Runtime State
+    // ============================
     private EnemyState _state = EnemyState.Patrolling;
+
     private Vector3 _lastKnownPos;      // Última posición conocida/ruido
     private float _lostSightTimer;
     private float _lastAttackTime;
-
 
     private bool _scanActive;
     private float _scanTimer;
     private float _scanBaseYaw;
     private bool _movingToSuspicionPoint;
 
-
-
     // Pendientes por visitar en este ciclo de sospecha
-    List<Transform> _suspiciousLeft;
-    // Solo informativo, por si lo querés usar
-    Transform _currentSusTarget;
+    private List<Transform> _suspiciousList;
 
-    void Reset()
-    {
-        agent = GetComponent<NavMeshAgent>();
-    }
-
-    void Awake()
+    // ============================
+    //      Unity Lifecycle
+    // ============================
+    private void Awake()
     {
         if (!agent) agent = GetComponent<NavMeshAgent>();
         if (!animator) animator = GetComponentInChildren<Animator>();
 
+        // Buscar al jugador por tag
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj) player = playerObj.transform;
+
+        // Estado inicial
         SetState(EnemyState.Patrolling);
+
+        // Primer destino de patrulla
         if (patrolPoints != null && patrolPoints.Length > 0)
             agent.SetDestination(patrolPoints[_patrolIndex].position);
+
+        // Asegurar que el layer Player no bloquee LdV
         int playerLayer = LayerMask.NameToLayer("Player");
-        if (playerLayer >= 0) // por si el layer no existe (NameToLayer devolvería -1)
-        {
+        if (playerLayer >= 0)
             obstacleMask &= ~(1 << playerLayer);
-        }
+
+        // Intentar encontrar un hijo llamado "Eyes" si no está asignado
+        if (!eyes)
+            eyes = transform.Find("Eyes");
     }
 
-    void Update()
+    private void Update()
     {
         // Percepción: chequea sólo al jugador
         bool seesPlayer = TrySeePlayer(out Vector3 seenPos);
@@ -147,7 +151,11 @@ public class EnemyControllerBase : MonoBehaviour
         UpdateAnimator();
     }
 
+    // ============================
+    //        State Machine
+    // ============================
     #region State Ticks
+
     private void TickPatrolling(bool seesPlayer, Vector3 seenPos)
     {
         agent.speed = patrolSpeed;
@@ -164,8 +172,8 @@ public class EnemyControllerBase : MonoBehaviour
             if (!agent.pathPending && agent.remainingDistance <= waypointTolerance)
                 AdvancePatrol();
         }
-        //FaceForwardSlowly();   // Usalo si queres que patrulle girando en 360º
 
+        // FaceForwardSlowly();   // Usalo si queres que patrulle girando en 360º
     }
 
     private void TickSuspicious(bool seesPlayer, Vector3 seenPos)
@@ -199,6 +207,7 @@ public class EnemyControllerBase : MonoBehaviour
         if (_scanActive)
         {
             _scanTimer += Time.deltaTime;
+
             // Oscilación senoidal: base ± amplitud
             float angle = _scanBaseYaw + Mathf.Sin(_scanTimer * 2f * Mathf.PI * scanOscillationsPerSecond) * scanYawAmplitude;
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
@@ -211,15 +220,14 @@ public class EnemyControllerBase : MonoBehaviour
                 return;
             }
             return;
-
         }
 
-        if (!_scanActive && (_suspiciousLeft != null && _suspiciousLeft.Count > 0))
+        // Elegir siguiente punto de sospecha (si hay)
+        if (!_scanActive && _suspiciousList != null && _suspiciousList.Count > 0)
         {
-            Transform next = PopNearest(_suspiciousLeft, transform.position);
+            Transform next = PopNearest(_suspiciousList, transform.position);
             if (next != null)
             {
-                _currentSusTarget = next;
                 _movingToSuspicionPoint = true;
 
                 agent.isStopped = false;
@@ -227,22 +235,16 @@ public class EnemyControllerBase : MonoBehaviour
                 agent.SetDestination(next.position);
                 return;
             }
-
-            // Si todos cayeron nulos/inactivos, seguís el flujo normal (quedarte/volver a patrulla, etc.)
         }
         else
         {
+            // No hay más puntos: volver a patrullar
             agent.isStopped = false;
             agent.updateRotation = true;
             _scanActive = false;
             SetState(EnemyState.Patrolling);
         }
-
-        // Fallback (no debería pasar mucho): mantener una rotación lenta
-        //FaceForwardSlowly();
     }
-
-
 
     private void TickDanger(bool seesPlayer, Vector3 seenPos)
     {
@@ -264,17 +266,17 @@ public class EnemyControllerBase : MonoBehaviour
         }
 
         // Perseguir hacia player si lo veo, sino al último punto conocido
-        Vector3 chasePos = seesPlayer && player ? player.position : _lastKnownPos;
+        Vector3 chasePos = (seesPlayer && player) ? player.position : _lastKnownPos;
         agent.SetDestination(chasePos);
 
         // Ataque si está a rango y con LdV
         if (player)
         {
             float dist = Vector3.Distance(transform.position, player.position);
-            if (dist <= attackRange && HasLineOfSightTo(player, out _))
+            if (dist <= attackRange && TrySeePlayer(out _))
             {
                 FaceTowards(player.position);
-                TryAttack();
+                //TryAttack();
             }
         }
     }
@@ -288,6 +290,7 @@ public class EnemyControllerBase : MonoBehaviour
             case EnemyState.Patrolling:
                 agent.stoppingDistance = 0f;
                 _lostSightTimer = 0f;
+
                 if (patrolPoints != null && patrolPoints.Length > 0)
                     agent.SetDestination(patrolPoints[_patrolIndex].position);
                 break;
@@ -300,30 +303,28 @@ public class EnemyControllerBase : MonoBehaviour
                     _scanTimer = 0f;
 
                     // Construye la lista de puntos válidos
-                    _suspiciousLeft = null;
-                    _currentSusTarget = null;
+                    _suspiciousList = null;
 
                     if (suspicionPoints != null && suspicionPoints.Length > 0)
                     {
-                        _suspiciousLeft = new List<Transform>(suspicionPoints.Length);
+                        _suspiciousList = new List<Transform>(suspicionPoints.Length);
                         foreach (var t in suspicionPoints)
                             if (t && t.gameObject.activeInHierarchy)
-                                _suspiciousLeft.Add(t);
+                                _suspiciousList.Add(t);
                     }
 
                     // **PRIORIDAD**: si hay LKP, ir primero ahí. Si no hay LKP, recién ahí elegir el nearest.
                     Vector3 targetPos;
                     if (_lastKnownPos != Vector3.zero)
                     {
-                        targetPos = _lastKnownPos;                  // <- primero LKP
-                        _currentSusTarget = null;                   // informativo
+                        targetPos = _lastKnownPos; // <- primero LKP
                     }
                     else
                     {
-                        Transform first = (_suspiciousLeft != null) ? PopNearest(_suspiciousLeft, transform.position) : null;
-                        _currentSusTarget = first;
+                        Transform first = (_suspiciousList != null) ? PopNearest(_suspiciousList, transform.position) : null;
                         targetPos = (first != null) ? first.position : transform.position;
                     }
+
                     _movingToSuspicionPoint = true;
                     agent.isStopped = false;
                     agent.updateRotation = true;
@@ -345,8 +346,12 @@ public class EnemyControllerBase : MonoBehaviour
         }
     }
 
+    #endregion
 
-    private bool TrySeePlayer(out Vector3 seenPos)
+    // ============================
+    //          Perception
+    // ============================
+    public bool TrySeePlayer(out Vector3 seenPos) // Cono
     {
         seenPos = Vector3.zero;
         if (!player) return false;
@@ -375,7 +380,102 @@ public class EnemyControllerBase : MonoBehaviour
         seenPos = target;
         return true;
     }
-    Transform PopNearest(List<Transform> list, Vector3 from)
+
+    private bool TryNearDetectPlayer(out Vector3 sensedPos)  // Esfera alrededor
+    {
+        sensedPos = Vector3.zero;
+        if (!player) return false;
+
+        Vector3 origin = GetEyesWorldPos();                // podés usar transform.position si preferís
+        Vector3 target = GetTargetAimPoint(player);
+        Vector3 dir = target - origin;
+        float dist = dir.magnitude;
+
+        if (dist > proximityRadius) return false;
+
+        sensedPos = target;                                // lo “sentimos” (ruido/pasos/respiración)
+        return true;
+    }
+
+    // ============================
+    //          Patrol
+    // ============================
+    private void AdvancePatrol()
+    {
+        if (patrolPoints == null || patrolPoints.Length == 0) return;
+
+        _patrolIndex++;
+        if (_patrolIndex >= patrolPoints.Length)
+            _patrolIndex = loopPatrol ? 0 : patrolPoints.Length - 1;
+
+        agent.SetDestination(patrolPoints[_patrolIndex].position);
+    }
+
+    // ============================
+    //        Target Helpers
+    // ============================
+    private Vector3 GetTargetAimPoint(Transform t)
+    {
+        float h = 1.8f;
+
+        var aim = t.GetComponent<IHeightProvider>(); // Uso la interface para conseguir la posicion de los ojos de mi jugador, y poder agacharme y que no me vea
+        if (aim != null) h = aim.GetEyeHeight();
+
+        return t.position + Vector3.up * h;
+    }
+
+    private Vector3 GetEyesWorldPos()
+    {
+        if (eyes != null) return eyes.position;
+        return transform.position + Vector3.up * eyesHeight;
+    }
+
+    private Vector3 GetForward()
+    {
+        return (eyes ? eyes.forward : transform.forward).normalized;
+    }
+
+    // ============================
+    //           Combat
+    // ============================
+    //private void TryAttack()
+    //{
+    //    if (Time.time - _lastAttackTime < attackCooldown) return;
+    //    _lastAttackTime = Time.time;
+
+    //    if (animator)
+    //        animator.SetTrigger("Attack");
+    //    else
+    //        ApplyDamageToPlayer();
+    //}
+
+    //// Llamado desde animación
+    //public void AnimEvent_DealDamage()
+    //{
+    //    ApplyDamageToPlayer();
+    //}
+
+    //private void ApplyDamageToPlayer()
+    //{
+    //    if (!player) return;
+
+    //    // Opción 1: interfaz IDamageable
+    //    var damageable = player.GetComponent(typeof(IDamageable)) as IDamageable;
+    //    if (damageable != null)
+    //    {
+    //        damageable.TakeDamage(attackDamage);
+    //        return;
+    //    }
+
+    //    // Opción 2: tu Health concreto (reemplazá por tu componente real)
+    //    // var health = player.GetComponent<Health>();
+    //    // if (health) health.ApplyDamage(attackDamage);
+    //}
+
+    // ============================
+    //   Helpers & Misc Utilities
+    // ============================
+    private Transform PopNearest(List<Transform> list, Vector3 from)
     {
         if (list == null || list.Count == 0) return null;
 
@@ -398,115 +498,8 @@ public class EnemyControllerBase : MonoBehaviour
 
         Transform nearest = list[bestIdx];
         list.RemoveAt(bestIdx);          // <- lo DESCARTA de pendientes
-        return nearest;                   // <- lo devolvemos como destino actual
+        return nearest;                  // <- lo devolvemos como destino actual
     }
-    private bool TryNearDetectPlayer(out Vector3 sensedPos)
-    {
-        sensedPos = Vector3.zero;
-        if (!player) return false;
-
-        Vector3 origin = GetEyesWorldPos();                // podés usar transform.position si preferís
-        Vector3 target = GetTargetAimPoint(player);
-        Vector3 toPlayer = target - origin;
-        float dist = toPlayer.magnitude;
-
-        if (dist > proximityRadius) return false;
-
-        sensedPos = target;                                // lo “sentimos” (ruido/pasos/respiración)
-        return true;
-    }
-    private void AdvancePatrol()
-    {
-        if (patrolPoints == null || patrolPoints.Length == 0) return;
-
-        _patrolIndex++;
-        if (_patrolIndex >= patrolPoints.Length)
-            _patrolIndex = loopPatrol ? 0 : patrolPoints.Length - 1;
-
-        agent.SetDestination(patrolPoints[_patrolIndex].position);
-    }
-    private Vector3 GetTargetAimPoint(Transform t)
-    {
-        float h = 1.8f;
-
-        var aim = t.GetComponentInParent<IEyeHeightProvider>();
-        if (aim != null) h = aim.GetEyeHeight();
-
-        return t.position + Vector3.up * (h);
-    }
-
-    private bool HasLineOfSightTo(Transform t, out Vector3 hitPoint)
-    {
-        Vector3 origin = GetEyesWorldPos();
-        Vector3 target = GetTargetAimPoint(t);
-        Vector3 dir = (target - origin);
-        float dist = dir.magnitude;
-        dir /= (dist > 0.0001f ? dist : 1f);
-
-        if (Physics.Raycast(origin, dir, out RaycastHit hit, dist + 0.1f, obstacleMask, QueryTriggerInteraction.Ignore))
-        {
-            hitPoint = hit.point;
-            return false;
-        }
-
-        hitPoint = target;
-        return true;
-    }
-
-
-
-    private Vector3 GetEyesWorldPos()
-    {
-        if (eyes != null) return eyes.position;
-        return transform.position + Vector3.up * eyesHeight;
-    }
-
-    private Vector3 GetForward()
-    {
-        return (eyes ? eyes.forward : transform.forward).normalized;
-    }
-
-
-
-    #region Combat
-    private void TryAttack()
-    {
-        if (Time.time - _lastAttackTime < attackCooldown) return;
-        _lastAttackTime = Time.time;
-
-        if (animator)
-            animator.SetTrigger("Attack");
-        else
-            ApplyDamageToPlayer();
-    }
-
-
-    public void AnimEvent_DealDamage()
-    {
-        ApplyDamageToPlayer();
-    }
-
-    private void ApplyDamageToPlayer()
-    {
-        if (!player) return;
-
-        // Opción 1: interfaz IDamageable
-        var damageable = player.GetComponent(typeof(IDamageable)) as IDamageable;
-        if (damageable != null)
-        {
-            damageable.TakeDamage(attackDamage);
-            return;
-        }
-
-        // Opción 2: tu Health concreto (reemplazá por tu componente real)
-        // var health = player.GetComponent<Health>();
-        // if (health) health.ApplyDamage(attackDamage);
-    }
-    #endregion
-
-    #region Helpers & State
-    
-
 
     private void FaceForwardSlowly()   // Usalo si queres que patrulle girando en 360º
     {
@@ -517,25 +510,29 @@ public class EnemyControllerBase : MonoBehaviour
         );
     }
 
-    private void FaceTowards(Vector3 worldPos)
+    private void FaceTowards(Vector3 targetPos)
     {
-        Vector3 dir = (worldPos - transform.position).WithY(0f);
+        Vector3 dir = targetPos - transform.position;
+        dir = new Vector3(dir.x, 0f, dir.z);   // Ignoro Y para que el agente se mueva solo por el suelo
         if (dir.sqrMagnitude < 0.0001f) return;
+
         Quaternion targetRot = Quaternion.LookRotation(dir, Vector3.up);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, turnSpeed * Time.deltaTime);
     }
-    #endregion
 
-    #region Animator Glue
+    // ============================
+    //        Animator Glue
+    // ============================
     private void UpdateAnimator()
     {
         if (!animator) return;
         float speed = agent ? agent.velocity.magnitude : 0f;
         animator.SetFloat("Speed", speed);
     }
-    #endregion
 
-    #region Gizmos
+    // ============================
+    //           Gizmos
+    // ============================
     private void OnDrawGizmosSelected()
     {
         if (!drawGizmos) return;
@@ -562,31 +559,17 @@ public class EnemyControllerBase : MonoBehaviour
             Gizmos.DrawWireSphere(_lastKnownPos, 0.3f);
             Gizmos.DrawWireSphere(_lastKnownPos, searchRadius);
         }
+
         // Radio de proximidad
         Gizmos.DrawWireSphere(GetEyesWorldPos(), proximityRadius);
-
-
-    }
-    #endregion
-}
-
-/// <summary>
-/// Helpers chiquitos para vectores.
-/// </summary>
-public static class VecExtensions
-{
-    public static Vector3 WithY(this Vector3 v, float y)
-    {
-        v.y = y; return v;
     }
 }
 
-/// <summary>
-/// Interfaz opcional si ya tenés un sistema de daño.
-/// </summary>
+// ============================
+//          Interfaces
+// ============================
 public interface IDamageable
 {
     void TakeDamage(int amount);
 }
 
-#endregion

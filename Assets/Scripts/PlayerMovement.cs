@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerMovement : MonoBehaviour, IEyeHeightProvider
+public class PlayerMovement : MonoBehaviour, IHeightProvider
 {
     // ─────────────────────────── Configuración / Referencias ───────────────────────────
     [Header("Facing")]
