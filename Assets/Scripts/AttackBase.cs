@@ -10,20 +10,34 @@ public abstract class AttackBase : MonoBehaviour, IAttackStrategy
     [SerializeField] protected Transform firePoint;     // origen del ataque (mano/arma)
     [SerializeField] protected LayerMask hitMask = ~0;  // capas válidas para raycast (si aplica)
 
+
+    
+
     private float _nextTime;
 
+    protected virtual void Awake()
+    {
+
+    }
     public void Attack(Transform target, Vector3 seenPos)
     {
         if (Time.time < _nextTime) return;
         if (!IsInRange(seenPos)) return;
 
         _nextTime = Time.time + cooldown;
-        DoAttack(target, seenPos); // <- paso específico (Template Method)
+        DoAttack(target, seenPos);
+        
     }
 
-    protected virtual bool IsInRange(Vector3 aimPos)
-        => Vector3.Distance(transform.position, aimPos) <= maxRange;
+    protected virtual bool IsInRange(Vector3 targetPos)
+    {
+        return Vector3.Distance(transform.position, targetPos) <= maxRange;
+    }
 
     // Cada derivada define cómo ataca
     protected abstract void DoAttack(Transform target, Vector3 seenPos);
+    
+    
+
+    
 }

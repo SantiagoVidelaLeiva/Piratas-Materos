@@ -418,7 +418,7 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
     {
         float h = 1.8f;
 
-        var aim = t.GetComponentInParent<IEyeHeightProvider>(); // Uso la interface para conseguir la posicion de los ojos de mi jugador, y poder agacharme y que no me vea
+        var aim = t.GetComponent<IHeightProvider>(); // Uso la interface para conseguir la posicion de los ojos de mi jugador, y poder agacharme y que no me vea
         if (aim != null) h = aim.GetEyeHeight();
 
         return t.position + Vector3.up * h;
