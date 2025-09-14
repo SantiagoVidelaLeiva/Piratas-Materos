@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerMovement : MonoBehaviour , IEyeHeightProvider
+public class PlayerMovement : MonoBehaviour, IEyeHeightProvider
 {
     // ─────────────────────────── Configuración / Referencias ───────────────────────────
     [Header("Facing")]
@@ -23,9 +23,6 @@ public class PlayerMovement : MonoBehaviour , IEyeHeightProvider
     [SerializeField] float _walkSpeed = 4.5f;
     [SerializeField] float _crouchSpeed = 1.2f;
     [SerializeField] float _runSpeed = 6.5f;
-    [SerializeField] float _gravity = -20f;
-    [SerializeField] float _jumpHeight = 1.4f;
-    Vector3 _velocity;
     Vector3 _lastGroundWorld;
     [SerializeField] bool _isFalling;
 
@@ -37,6 +34,10 @@ public class PlayerMovement : MonoBehaviour , IEyeHeightProvider
     [SerializeField] float _standingHeight = 1.8f;
     [SerializeField] float _crouchingHeight = 1.2f;
     public bool IsCrouching { get; private set; }
+    
+    [Header("Scripts")]                            // Referencia al script de gravedad
+    [SerializeField] PlayerGravity _playerGravity;
+
 
 
     public float GetEyeHeight() => IsCrouching ? _crouchingHeight : _standingHeight;
@@ -63,6 +64,7 @@ public class PlayerMovement : MonoBehaviour , IEyeHeightProvider
         if (!_visual && _anim) _visual = _anim.transform;
         if (_visual) _visual.localPosition = new Vector3(0f, _visualYOffset, 0f);
 
+        if (!_playerGravity) _playerGravity = GetComponent<PlayerGravity>();
     }
 
     void Update()
@@ -71,9 +73,7 @@ public class PlayerMovement : MonoBehaviour , IEyeHeightProvider
         Crouch();
         Jump();
         Run();
-        ApplyGravity();
         Move();
-
 
     }
 
@@ -109,7 +109,8 @@ public class PlayerMovement : MonoBehaviour , IEyeHeightProvider
         if (_cc.isGrounded)
             _lastGroundWorld = world;
         Vector3 horiz = _cc.isGrounded ? world : _lastGroundWorld;
-        Vector3 total = horiz + _velocity; // gravedad en velocity.y
+
+        Vector3 total = horiz + _playerGravity.VerticalVelocity; // gravedad
         _cc.Move(total * Time.deltaTime);
 
         _lastHorizontalSpeed = new Vector3(_cc.velocity.x, 0f, _cc.velocity.z).magnitude;
@@ -189,17 +190,7 @@ public class PlayerMovement : MonoBehaviour , IEyeHeightProvider
     {
         if (_cc.isGrounded && Input.GetKeyDown(KeyCode.Space) && !IsCrouching)
         {
-            _velocity.y = Mathf.Sqrt(2f * _jumpHeight * -_gravity);
+            _playerGravity.Jump();
         }
     }
-
-    void ApplyGravity()
-    {
-        if (_cc.isGrounded && _velocity.y < 0) // Velocity siempre es negativo por gravity.
-            _velocity.y = -2f;           // Si estas tocando el suelo te deja pegado a el con -2
-        _velocity.y += _gravity * Time.deltaTime;
-    }
-
-
-
 }
