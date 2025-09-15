@@ -12,7 +12,7 @@ public class PlayerGravity : MonoBehaviour
     // Esta es ahora una variable privada que podemos modificar directamente
     private Vector3 _verticalVelocity;
 
-    // Esta es la propiedad pública que otros scripts pueden leer
+    // Esta es la propiedad pï¿½blica que otros scripts pueden leer
     public Vector3 VerticalVelocity
     {
         get { return _verticalVelocity; }
@@ -34,7 +34,7 @@ public class PlayerGravity : MonoBehaviour
 
     private void ApplyGravity()
     {
-        // Si está en el suelo y la velocidad vertical es negativa, se "pega" al suelo.
+        // Si estï¿½ en el suelo y la velocidad vertical es negativa, se "pega" al suelo.
         if (_cc.isGrounded && _verticalVelocity.y < 0)
         {
             _verticalVelocity = new Vector3(0, -2f, 0);

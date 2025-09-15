@@ -76,6 +76,7 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
     //        Runtime State
     // ============================
     private EnemyState _state = EnemyState.Patrolling;
+    private EnemyState _lastState = EnemyState.Patrolling;
 
     private Vector3 _lastKnownPos;      // Última posición conocida/ruido
     private float _lostSightTimer;
@@ -134,17 +135,29 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
         {
             case EnemyState.Patrolling:
                 TickPatrolling(seesPlayer, seenPos);
-                Debug.Log("Patrol");
+                if (_state != _lastState)
+                {
+                    Debug.Log("Patrol");
+                    _lastState = EnemyState.Patrolling;
+                }
                 break;
 
             case EnemyState.Suspicious:
                 TickSuspicious(seesPlayer, seenPos);
-                Debug.Log("Sospechoso");
+                if (_state != _lastState)
+                {
+                    Debug.Log("Suspicious");
+                    _lastState = EnemyState.Suspicious;
+                }
                 break;
 
             case EnemyState.Danger:
                 TickDanger(seesPlayer, seenPos);
-                Debug.Log("Danger");
+                if (_state != _lastState)
+                {
+                    Debug.Log("Danger");
+                    _lastState = EnemyState.Danger;
+                }
                 break;
         }
 
@@ -563,13 +576,5 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
         // Radio de proximidad
         Gizmos.DrawWireSphere(GetEyesWorldPos(), proximityRadius);
     }
-}
-
-// ============================
-//          Interfaces
-// ============================
-public interface IDamageable
-{
-    void TakeDamage(int amount);
 }
 
