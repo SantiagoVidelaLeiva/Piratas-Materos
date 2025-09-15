@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class SistemadeCamaras : MonoBehaviour
 {
-    public Camera thirdPersonCamera;           // Tu cámara principal del personaje
-    public Camera[] securityCameras;           // Lista de cámaras de seguridad
+    public Camera thirdPersonCamera;           // Tu cï¿½mara principal del personaje
+    public Camera[] securityCameras;           // Lista de cï¿½maras de seguridad
 
     public PlayerMovement playerMovement;      // Codigos publicos para poder desactivar 
     public CameraOrbit cameraOrbit;
@@ -13,13 +13,13 @@ public class SistemadeCamaras : MonoBehaviour
 
     void Start()
     {
-        // Asegurarse de que solo la cámara del jugador esté activa al inicio
+        // Asegurarse de que solo la cï¿½mara del jugador estï¿½ activa al inicio
         EnableThirdPersonView();
     }
 
     void Update()
     {
-        // Activar / salir del modo de cámaras
+        // Activar / salir del modo de cï¿½maras
         if (Input.GetKeyDown(KeyCode.C))
         {
             inSecurityMode = !inSecurityMode;
@@ -34,7 +34,7 @@ public class SistemadeCamaras : MonoBehaviour
             }
         }
 
-        // Si estamos en modo cámaras, podemos cambiar de cámara
+        // Si estamos en modo cï¿½maras, podemos cambiar de cï¿½mara
         if (inSecurityMode)
         {
             if (Input.GetKeyDown(KeyCode.RightArrow))
@@ -56,7 +56,7 @@ public class SistemadeCamaras : MonoBehaviour
 
         currentSecurityCamIndex = 0;
         UpdateSecurityCameras();
-        Debug.Log("Modo cámara de seguridad activado.");
+        Debug.Log("Modo cï¿½mara de seguridad activado.");
     }
 
     void ExitSecurityCameraMode()
