@@ -134,17 +134,14 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
         {
             case EnemyState.Patrolling:
                 TickPatrolling(seesPlayer, seenPos);
-                Debug.Log("Patrol");
                 break;
 
             case EnemyState.Suspicious:
                 TickSuspicious(seesPlayer, seenPos);
-                Debug.Log("Sospechoso");
                 break;
 
             case EnemyState.Danger:
                 TickDanger(seesPlayer, seenPos);
-                Debug.Log("Danger");
                 break;
         }
 
@@ -564,12 +561,3 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
         Gizmos.DrawWireSphere(GetEyesWorldPos(), proximityRadius);
     }
 }
-
-// ============================
-//          Interfaces
-// ============================
-public interface IDamageable
-{
-    void TakeDamage(int amount);
-}
-
