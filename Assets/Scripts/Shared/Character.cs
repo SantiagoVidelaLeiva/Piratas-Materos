@@ -20,7 +20,7 @@ public class Character : MonoBehaviour, IDamageable
     public void TakeDamage(float amount)
     {
         currentHp -= amount;
-        healthBar.SetHealth(currentHp);
+        healthBar.UpdateHealth(currentHp);
         Debug.Log("Vida restante: " + currentHp);
     }
 }

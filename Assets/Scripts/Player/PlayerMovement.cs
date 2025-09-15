@@ -65,16 +65,17 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
         if (_visual) _visual.localPosition = new Vector3(0f, _visualYOffset, 0f);
 
         if (!_playerGravity) _playerGravity = GetComponent<PlayerGravity>();
+
+
     }
 
     void Update()
     {
         UpdateState();
         Crouch();
-        Jump();
         Run();
         Move();
-
+        
     }
 
     void LateUpdate()
@@ -184,13 +185,5 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
         if (!_cc.isGrounded) return;
 
         _isRunning = Input.GetKey(_runKey);
-    }
-
-    void Jump() // No creo que se use en este juego
-    {
-        if (_cc.isGrounded && Input.GetKeyDown(KeyCode.Space) && !IsCrouching)
-        {
-            _playerGravity.Jump();
-        }
     }
 }
