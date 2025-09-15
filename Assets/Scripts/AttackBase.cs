@@ -9,9 +9,7 @@ public abstract class AttackBase : MonoBehaviour, IAttackStrategy
     [SerializeField] protected float maxRange = 8f;
     [SerializeField] protected Transform firePoint;     // origen del ataque (mano/arma)
     [SerializeField] protected LayerMask hitMask = ~0;  // capas válidas para raycast (si aplica)
-
-
-    
+    public virtual float StopDistance => maxRange; // StopDistance siempre devuelve el mismo valor que maxRange
 
     private float _nextTime;
 
