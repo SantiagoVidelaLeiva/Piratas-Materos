@@ -20,54 +20,34 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
     [SerializeField] private Transform player;          // *** ÚNICO objetivo ***
 
     [Header("Patrol")]
-    [Tooltip("Puntos de patrulla en orden. Si está vacío, el enemigo se queda en su lugar.")]
     [SerializeField] private Transform[] patrolPoints;
     [SerializeField] private float waypointTolerance = 0.6f;
     [SerializeField] private bool loopPatrol = true;
     private int _patrolIndex;
 
     [Header("Suspicion (Simple)")]
-    [Tooltip("Puntos de sospecha opcionales. Si están vacíos, el enemigo escanea en el LKP.")]
     [SerializeField] private Transform[] suspicionPoints;
-
-    [Tooltip("Duración del barrido izq/der al llegar al punto de sospecha.")]
-    [SerializeField, Min(0.1f)] private float scanDuration = 5f;
-
-    [Tooltip("Amplitud del barrido en grados (izq/der).")]
-    [SerializeField, Range(5f, 120f)] private float scanYawAmplitude = 70f;
-
-    [Tooltip("Ciclos de oscilación por segundo (cómo de rápido va izq/der).")]
-    [SerializeField, Min(0.1f)] private float scanOscillationsPerSecond = 0.2f;
+    [SerializeField] private float scanDuration = 5f;
+    [SerializeField] private float scanYawAmplitude = 70f;
+    [SerializeField] private float scanOscillationsPerSecond = 0.2f;
 
     [Header("Perception")]
-    [Tooltip("Capas que bloquean la visión (paredes, props).")]
     [SerializeField] private LayerMask obstacleMask;    // por defecto todo
-    [Tooltip("Distancia máxima de visión.")]
-    [SerializeField, Min(0f)] private float visionRange = 20f;
-    [Tooltip("Apertura del cono de visión en grados.")]
-    [SerializeField, Range(1f, 180f)] private float visionAngle = 90f;
-    [Tooltip("Altura de los ojos si 'eyes' es null (offset local en Y).")]
+    [SerializeField] private float visionRange = 20f;
+    [SerializeField] private float visionAngle = 90f;
     [SerializeField] private float eyesHeight = 1.7f;
 
     [Header("Suspicion/Search")]
-    [Tooltip("Tiempo que puede perder de vista al objetivo antes de salir de Danger.")]
-    [SerializeField, Min(0f)] private float lostSightGrace = 2f;
-    [Tooltip("Radio de búsqueda cuando llega al punto sospechoso.")]
-    [SerializeField, Min(0f)] private float searchRadius = 5f;
-
-    [Header("Combat")]
-    [SerializeField, Min(0f)] private float attackRange = 1.8f;
-    [SerializeField, Min(0f)] private float attackCooldown = 1.2f;
-    [SerializeField] private int attackDamage = 10;
+    [SerializeField] private float lostSightGrace = 2f;
+    [SerializeField] private float searchRadius = 5f;
 
     [Header("Speeds")]
-    [SerializeField, Min(0f)] private float patrolSpeed = 2.0f;
-    [SerializeField, Min(0f)] private float chaseSpeed = 3.5f;
-    [SerializeField, Min(0f)] private float turnSpeed = 360f;
+    [SerializeField] private float patrolSpeed = 2.0f;
+    [SerializeField] private float chaseSpeed = 3.5f;
+    [SerializeField] private float turnSpeed = 360f;
 
     [Header("Proximity / Awareness")]
-    [Tooltip("Radio de detección cercana: si el jugador entra, se detecta aunque esté fuera del cono.")]
-    [SerializeField, Min(0f)] private float proximityRadius = 5f;
+    [SerializeField] private float proximityRadius = 5f;
 
     [Header("Debug")]
     [SerializeField] private bool drawGizmos = true;
@@ -76,19 +56,18 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
     //        Runtime State
     // ============================
     private EnemyState _state = EnemyState.Patrolling;
-    private EnemyState _lastState = EnemyState.Patrolling;
 
     private Vector3 _lastKnownPos;      // Última posición conocida/ruido
     private float _lostSightTimer;
-    private float _lastAttackTime;
 
     private bool _scanActive;
     private float _scanTimer;
     private float _scanBaseYaw;
     private bool _movingToSuspicionPoint;
 
-    // Pendientes por visitar en este ciclo de sospecha
     private List<Transform> _suspiciousList;
+
+    private AttackBase _attackBase;
 
     // ============================
     //      Unity Lifecycle
@@ -98,7 +77,6 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
         if (!agent) agent = GetComponent<NavMeshAgent>();
         if (!animator) animator = GetComponentInChildren<Animator>();
 
-        // Buscar al jugador por tag
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj) player = playerObj.transform;
 
@@ -109,14 +87,14 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
         if (patrolPoints != null && patrolPoints.Length > 0)
             agent.SetDestination(patrolPoints[_patrolIndex].position);
 
-        // Asegurar que el layer Player no bloquee LdV
         int playerLayer = LayerMask.NameToLayer("Player");
         if (playerLayer >= 0)
             obstacleMask &= ~(1 << playerLayer);
 
-        // Intentar encontrar un hijo llamado "Eyes" si no está asignado
         if (!eyes)
             eyes = transform.Find("Eyes");
+
+        _attackBase = GetComponent<AttackBase>();
     }
 
     private void Update()
@@ -124,7 +102,7 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
         // Percepción: chequea sólo al jugador
         bool seesPlayer = TrySeePlayer(out Vector3 seenPos);
 
-        // Si no lo veo por cono, pruebo detección cercana (sensing)
+        // Si no lo veo por cono, pruebo detección cercana
         if (!seesPlayer && TryNearDetectPlayer(out Vector3 sensedPos))
         {
             seesPlayer = true;
@@ -135,29 +113,14 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
         {
             case EnemyState.Patrolling:
                 TickPatrolling(seesPlayer, seenPos);
-                if (_state != _lastState)
-                {
-                    Debug.Log("Patrol");
-                    _lastState = EnemyState.Patrolling;
-                }
                 break;
 
             case EnemyState.Suspicious:
                 TickSuspicious(seesPlayer, seenPos);
-                if (_state != _lastState)
-                {
-                    Debug.Log("Suspicious");
-                    _lastState = EnemyState.Suspicious;
-                }
                 break;
 
             case EnemyState.Danger:
                 TickDanger(seesPlayer, seenPos);
-                if (_state != _lastState)
-                {
-                    Debug.Log("Danger");
-                    _lastState = EnemyState.Danger;
-                }
                 break;
         }
 
@@ -167,7 +130,6 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
     // ============================
     //        State Machine
     // ============================
-    #region State Ticks
 
     private void TickPatrolling(bool seesPlayer, Vector3 seenPos)
     {
@@ -267,30 +229,34 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
         {
             _lastKnownPos = seenPos;
             _lostSightTimer = 0f;
+
+            // El stoppingDistance depende del ataque (ej: melee a 1.5m)
+            agent.stoppingDistance = Mathf.Max(_attackBase.StopDistance, agent.radius + 0.1f);
+
+            // ✅ Solo perseguir si estoy fuera de stoppingDistance
+            float dist = Vector3.Distance(transform.position, player.position);
+            if (dist > agent.stoppingDistance + 0.05f)  // margen pequeño para evitar vibración
+            {
+                agent.SetDestination(player.position);
+            }
+            else
+            {
+                agent.ResetPath(); // se queda quieto
+                _attackBase?.Attack(player, seenPos);
+            }
         }
         else
         {
+            // Perdió de vista al jugador
             _lostSightTimer += Time.deltaTime;
             if (_lostSightTimer >= lostSightGrace)
             {
                 SetState(EnemyState.Suspicious);
                 return;
             }
-        }
 
-        // Perseguir hacia player si lo veo, sino al último punto conocido
-        Vector3 chasePos = (seesPlayer && player) ? player.position : _lastKnownPos;
-        agent.SetDestination(chasePos);
-
-        // Ataque si está a rango y con LdV
-        if (player)
-        {
-            float dist = Vector3.Distance(transform.position, player.position);
-            if (dist <= attackRange && TrySeePlayer(out _))
-            {
-                FaceTowards(player.position);
-                //TryAttack();
-            }
+            // Ir al último punto conocido
+            agent.SetDestination(_lastKnownPos);
         }
     }
 
@@ -346,7 +312,7 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
                 }
 
             case EnemyState.Danger:
-                agent.stoppingDistance = Mathf.Max(attackRange * 0.8f, 0.1f);
+
                 _lostSightTimer = 0f;
                 break;
         }
@@ -358,8 +324,6 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
             animator.SetBool("IsDanger", _state == EnemyState.Danger);
         }
     }
-
-    #endregion
 
     // ============================
     //          Perception
@@ -406,7 +370,7 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
 
         if (dist > proximityRadius) return false;
 
-        sensedPos = target;                                // lo “sentimos” (ruido/pasos/respiración)
+        sensedPos = target;                                
         return true;
     }
 
@@ -447,43 +411,6 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
     {
         return (eyes ? eyes.forward : transform.forward).normalized;
     }
-
-    // ============================
-    //           Combat
-    // ============================
-    //private void TryAttack()
-    //{
-    //    if (Time.time - _lastAttackTime < attackCooldown) return;
-    //    _lastAttackTime = Time.time;
-
-    //    if (animator)
-    //        animator.SetTrigger("Attack");
-    //    else
-    //        ApplyDamageToPlayer();
-    //}
-
-    //// Llamado desde animación
-    //public void AnimEvent_DealDamage()
-    //{
-    //    ApplyDamageToPlayer();
-    //}
-
-    //private void ApplyDamageToPlayer()
-    //{
-    //    if (!player) return;
-
-    //    // Opción 1: interfaz IDamageable
-    //    var damageable = player.GetComponent(typeof(IDamageable)) as IDamageable;
-    //    if (damageable != null)
-    //    {
-    //        damageable.TakeDamage(attackDamage);
-    //        return;
-    //    }
-
-    //    // Opción 2: tu Health concreto (reemplazá por tu componente real)
-    //    // var health = player.GetComponent<Health>();
-    //    // if (health) health.ApplyDamage(attackDamage);
-    //}
 
     // ============================
     //   Helpers & Misc Utilities
@@ -577,4 +504,3 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
         Gizmos.DrawWireSphere(GetEyesWorldPos(), proximityRadius);
     }
 }
-
