@@ -49,7 +49,7 @@ public class CameraOrbit : MonoBehaviour
 
     public Vector3 ForwardOnPlane()
     {
-        Vector3 f = transform.forward; // “hacia adelante” de la cámara
+        Vector3 f = transform.forward; // ï¿½hacia adelanteï¿½ de la cï¿½mara
         f.y = 0;                       // lo proyecto al plano XZ (quito componente vertical)
         return f.normalized;
     }
