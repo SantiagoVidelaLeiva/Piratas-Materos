@@ -10,6 +10,10 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
     // ============================
     public enum EnemyState { Patrolling, Suspicious, Danger }
 
+    
+    public event System.Action<EnemyState> OnStateChange;      // Novedad: Evento que otros scripts pueden escuchar para saber el estado de este enemigo
+    public EnemyState currentState => _state;                 // Novedad: Propiedad pblica para que el agregador pueda leer el estado actual.
+
     // ============================
     //        Inspector Fields
     // ============================
@@ -18,6 +22,7 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
     [SerializeField] private Animator animator;         // Opcional
     [SerializeField] private Transform eyes;            // Punto de visión (si null usa transform)
     [SerializeField] private Transform player;          // *** ÚNICO objetivo ***
+    [SerializeField] private EnemyStateAggregator enemyStateAggregator;  // notificamos al enemymanager del estado actual del enemigo
 
     [Header("Patrol")]
     [SerializeField] private Transform[] patrolPoints;
