@@ -17,8 +17,6 @@ public class CameraOrbit : MonoBehaviour
 
     void Awake()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
         if (!_target)
         {
             GameObject player = GameObject.FindWithTag("Player");
@@ -30,7 +28,7 @@ public class CameraOrbit : MonoBehaviour
     {
         if (!_target) return;
 
-        bool leftHeld = Input.GetMouseButton(0);
+        bool leftHeld = true;//Input.GetMouseButton(0);
 
         if (leftHeld)
         {
