@@ -72,7 +72,7 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
 
     private List<Transform> _suspiciousList;
 
-    private AttackBase _attackBase;
+     //  private AttackBase _attackBase;      //  //                     Importante, script comentado momentaneamente para evitar errores
 
     // ============================
     //      Unity Lifecycle
@@ -99,7 +99,7 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
         if (!eyes)
             eyes = transform.Find("Eyes");
 
-        _attackBase = GetComponent<AttackBase>();
+        //     _attackBase = GetComponent<AttackBase>();  //  //                     Importante, script comentado momentaneamente para evitar errores
     }
 
     private void Update()
@@ -236,7 +236,9 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
             _lostSightTimer = 0f;
 
             // El stoppingDistance depende del ataque (ej: melee a 1.5m)
-            agent.stoppingDistance = Mathf.Max(_attackBase.StopDistance, agent.radius + 0.1f);
+            //     agent.stoppingDistance = Mathf.Max(_attackBase.StopDistance, agent.radius + 0.1f);  //  //                     Importante, script comentado momentaneamente para evitar errores, tambien hay un remplazo moemntaneo abajo
+            agent.stoppingDistance = 0.5f;
+
 
             // ✅ Solo perseguir si estoy fuera de stoppingDistance
             float dist = Vector3.Distance(transform.position, player.position);
@@ -247,7 +249,7 @@ public class EnemyControllerBase : MonoBehaviour , IVisionProvider
             else
             {
                 agent.ResetPath(); // se queda quieto
-                _attackBase?.Attack(player, seenPos);
+                // _attackBase?.Attack(player, seenPos);                   //  //                     Importante, script comentado momentaneamente para evitar errores
             }
         }
         else
