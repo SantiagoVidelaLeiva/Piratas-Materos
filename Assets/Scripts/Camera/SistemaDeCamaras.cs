@@ -11,18 +11,10 @@ public class SistemadeCamaras : MonoBehaviour
     private bool inSecurityMode = false;
     private int currentSecurityCamIndex = 0;
 
-    [SerializeField] private UIManager uiManager;
-
-
     void Start()
     {
         // Asegurarse de que solo la c�mara del jugador est� activa al inicio
         EnableThirdPersonView();
-
-        if (uiManager != null)
-        {
-            uiManager.ShowPlayerUI();
-        }
     }
 
     void Update()
@@ -64,12 +56,6 @@ public class SistemadeCamaras : MonoBehaviour
 
         currentSecurityCamIndex = 0;
         UpdateSecurityCameras();
-
-        if (uiManager != null)
-        {
-            uiManager.ShowHackerUI();
-        }
-
         Debug.Log("Modo c�mara de seguridad activado.");
     }
 
@@ -80,12 +66,6 @@ public class SistemadeCamaras : MonoBehaviour
 
         DisableAllSecurityCameras();
         EnableThirdPersonView();
-
-        if (uiManager != null)
-        {
-            uiManager.ShowPlayerUI();
-        }
-
         Debug.Log("Regresando al jugador.");
     }
 
@@ -120,15 +100,5 @@ public class SistemadeCamaras : MonoBehaviour
     void EnableThirdPersonView()
     {
         thirdPersonCamera.enabled = true;
-    }
-
-    public void OnEnterHackerMode()
-    {
-        uiManager.ShowHackerUI();
-    }
-
-    public void OnExitHackerMode()
-    {
-        uiManager.ShowPlayerUI();
     }
 }
