@@ -51,6 +51,10 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     //        Runtime State
     // ============================
     private EnemyState _state = EnemyState.Patrolling;
+    public EnemyState currentState { get { return _state; } } // Como otros scripts ven la misma variable
+
+    public event System.Action<EnemyState> OnStateChange;
+    public event System.Action OnEnemyDestroyed;
 
     protected Vector3 _lastKnownPos;
 
@@ -80,6 +84,11 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             nearDetect = transform.Find("NearDetect");
 
         _iattackStrategy = GetComponent<IAttackStrategy>();
+    }
+
+    private void OnDestroy()
+    {
+        OnEnemyDestroyed?.Invoke();                              // <-- NUEVO: Notifica a los oyentes antes de ser destruido.
     }
 
     private void Update()
@@ -231,6 +240,8 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
 
     protected virtual void SetState(EnemyState next) // ← antes private
     {
+        if (_state == next) return;
+
         _state = next;
 
         switch (_state)
@@ -256,6 +267,8 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             case EnemyState.Danger:
                 break;
         }
+
+        OnStateChange?.Invoke(_state);
     }
 
     // ============================

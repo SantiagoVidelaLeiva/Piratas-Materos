@@ -1,5 +1,6 @@
 using UnityEngine;
 using static System.Net.Mime.MediaTypeNames;
+using TMPro;
 
 public class UIManager : MonoBehaviour
 {
@@ -12,6 +13,12 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Sprite patrollingEyeSprite;
     [SerializeField] private Sprite suspiciousEyeSprite;
     [SerializeField] private Sprite dangerEyeSprite;
+
+    [Header("UI de Texto de Estado")]
+    [SerializeField] private TextMeshProUGUI statusText;
+    [SerializeField] private string patrollingText = "Undetected";
+    [SerializeField] private string suspiciousText = "Suspicious";
+    [SerializeField] private string dangerText = "SEEN";
 
     private void Start()
     {
@@ -49,6 +56,22 @@ public class UIManager : MonoBehaviour
             case EnemyControllerBase.EnemyState.Danger:
                 eyeImage.sprite = dangerEyeSprite;
                 break;
+        }
+
+        if (statusText != null)
+        {
+            switch (state)
+            {
+                case EnemyControllerBase.EnemyState.Patrolling:
+                    statusText.text = patrollingText;
+                    break;
+                case EnemyControllerBase.EnemyState.Suspicious:
+                    statusText.text = suspiciousText;
+                    break;
+                case EnemyControllerBase.EnemyState.Danger:
+                    statusText.text = dangerText;
+                    break;
+            }
         }
     }
 
