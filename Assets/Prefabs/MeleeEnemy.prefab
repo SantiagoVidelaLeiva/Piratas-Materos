@@ -226,9 +226,9 @@ MonoBehaviour:
   visionAngle: 90
   eyesHeight: 1.7
   patrolSpeed: 2
-  chaseSpeed: 3.5
-  turnSpeed: 360
-  proximityRadius: 5
+  chaseSpeed: 4
+  turnSpeed: 500
+  proximityRadius: 3
   drawGizmos: 1
 --- !u!114 &1107635002726145769
 MonoBehaviour:
@@ -244,7 +244,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 10
   cooldown: 0.5
-  maxRange: 8
+  maxRange: 4
   firePoint: {fileID: 0}
   hitMask:
     serializedVersion: 2
