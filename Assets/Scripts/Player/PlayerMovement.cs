@@ -24,7 +24,6 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
     [SerializeField] float _crouchSpeed = 1.2f;
     [SerializeField] float _runSpeed = 6.5f;
     Vector3 _lastGroundWorld;
-    [SerializeField] bool _isFalling;
 
     [Header("Inputs")]
     KeyCode _runKey = KeyCode.LeftShift;
