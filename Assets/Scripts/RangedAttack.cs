@@ -6,8 +6,11 @@ public class RangedAttack : AttackBase
     [SerializeField] private float spreadDegrees = 2.5f;
     [SerializeField] private LineRenderer beamPrefab; // opcional, para “flash”
     [SerializeField] private float beamLife = 0.1f;  // dura 1–2 frames
-
-
+    private void Awake()
+    {
+        beamPrefab = GameObject.Find("RedLineRender").GetComponent<LineRenderer>();
+        firePoint = transform.Find("Eyes");
+    }
     protected override void DoAttack(Transform target, Vector3 seenPos)
     {
         Vector3 origin = firePoint ? firePoint.position : transform.position + Vector3.up * 1.5f;

@@ -8,7 +8,11 @@ public class SniperAttack : AttackBase
     [SerializeField] private LineRenderer beamPrefab;
     [SerializeField] private float beamLife = 0.1f;
 
-
+    private void Awake()
+    {
+        beamPrefab = GameObject.Find("YellowLineRender").GetComponent<LineRenderer>();
+        firePoint = transform.Find("Eyes");
+    }
 
     protected override void DoAttack(Transform target, Vector3 seenPos)
     {
