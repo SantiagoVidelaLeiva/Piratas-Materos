@@ -46,15 +46,11 @@ public class Interactable : MonoBehaviour
     {     
         if (other.CompareTag("Player"))   // Revisa si el objeto que entró en el trigger es el jugador.
         {
-            _uiManager.ShowInteractPrompt(_interactPrompt);
-        }
-    }
-
-    private void OnTriggerStay(Collider other)
-    {
-        if (other.CompareTag("Player") && Input.GetKeyDown(KeyCode.E))    // Revisa si el jugador está en el área y si presiona la tecla de interacción.
-        {
-            _interactableObject.Interact();
+            _playerInRange = true;
+            if (_uiManager != null)
+            {
+                _uiManager.ShowInteractPrompt(_interactPrompt);
+            }
         }
     }
 
@@ -62,7 +58,11 @@ public class Interactable : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            _uiManager.HideInteractPrompt();
+            _playerInRange = false;
+            if (_uiManager != null)
+            {
+                _uiManager.HideInteractPrompt();
+            }
         }
     }
 }
