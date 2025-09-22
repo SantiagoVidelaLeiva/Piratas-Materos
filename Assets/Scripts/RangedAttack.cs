@@ -3,35 +3,48 @@ using UnityEngine;
 public class RangedAttack : AttackBase
 {
     [Header("Mid-Ranged")]
-    [SerializeField] private float spreadDegrees = 2.5f; // pequeña dispersión
-    [SerializeField] private float projectileSpeed = 0f; // 0 = usa raycast hitscan
-
+    [SerializeField] private float spreadDegrees = 2.5f;
+    [SerializeField] private LineRenderer beamPrefab; // opcional, para “flash”
+    [SerializeField] private float beamLife = 0.1f;  // dura 1–2 frames
+    private void Awake()
+    {
+        beamPrefab = GameObject.Find("RedLineRender").GetComponent<LineRenderer>();
+        firePoint = transform.Find("Eyes");
+    }
     protected override void DoAttack(Transform target, Vector3 seenPos)
     {
         Vector3 origin = firePoint ? firePoint.position : transform.position + Vector3.up * 1.5f;
-        Vector3 dir = (seenPos - origin).normalized;
+        Vector3 adjustTarget = seenPos + Vector3.down * 0.2f; // Dispara al cuerpo
+        Vector3 dir = (adjustTarget - origin).normalized;
+        
 
-        // aplicar un poco de spread (en ejes locales)
+        // spread
         dir = Quaternion.Euler(Random.Range(-spreadDegrees, spreadDegrees),
                                Random.Range(-spreadDegrees, spreadDegrees),
                                0f) * dir;
 
-        // Hitscan simple con Raycast (si no usás balas físicas)
-        if (projectileSpeed <= 0f)
+        if (Physics.Raycast(origin, dir, out var hit, maxRange, hitMask))
         {
-            if (Physics.Raycast(origin, dir, out var hit, maxRange, hitMask))
-            {
-                Debug.Log($"[MID] Impacto en {hit.collider.name} por {damage}");
-                // TODO: hit.collider.GetComponent<Health>()?.ApplyDamage(damage);
-            }
-            else
-            {
-                Debug.Log("[MID] Disparo fallido");
-            }
+            // daño
+            hit.collider.GetComponent<IDamageable>()?.TakeDamage(damage);
+            if (beamPrefab) StartCoroutine(FlashBeam(origin, hit.point));
         }
         else
         {
-            // TODO: Instanciar proyectil y darle velocidad hacia 'dir' (si querés proyectiles físicos)
+            if (beamPrefab) StartCoroutine(FlashBeam(origin, origin + dir * maxRange));
         }
+
+        Debug.DrawRay(origin, dir * maxRange, Color.red, 0.05f);
+    }
+
+    private System.Collections.IEnumerator FlashBeam(Vector3 a, Vector3 b)
+    {
+        var beam = Instantiate(beamPrefab, a, Quaternion.identity);
+        beam.positionCount = 2;
+        beam.SetPosition(0, a);
+        beam.SetPosition(1, b);
+        yield return null;                           // 1 frame
+        yield return new WaitForSeconds(beamLife);   // breve
+        Destroy(beam.gameObject);
     }
 }

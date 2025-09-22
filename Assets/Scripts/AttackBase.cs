@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 
-// Clase base para ataques. Implementa el contrato y centraliza cooldown/rango
 public abstract class AttackBase : MonoBehaviour, IAttackStrategy
 {
     [Header("Common Attack Settings")]
@@ -11,20 +10,19 @@ public abstract class AttackBase : MonoBehaviour, IAttackStrategy
     [SerializeField] protected LayerMask hitMask = ~0;  // capas válidas para raycast (si aplica)
     public virtual float StopDistance => maxRange; // StopDistance siempre devuelve el mismo valor que maxRange
 
-    private float _nextTime;
+    private float _nextAttackTime;
 
-    protected virtual void Awake()
+
+    public bool CanAttack(Transform target, Vector3 seenPos)
     {
-
+        return Time.time >= _nextAttackTime && IsInRange(seenPos);
     }
+
     public void Attack(Transform target, Vector3 seenPos)
     {
-        if (Time.time < _nextTime) return;
-        if (!IsInRange(seenPos)) return;
-
-        _nextTime = Time.time + cooldown;
+        if (!CanAttack(target, seenPos)) return;
+        _nextAttackTime = Time.time + cooldown;
         DoAttack(target, seenPos);
-        
     }
 
     protected virtual bool IsInRange(Vector3 targetPos)
