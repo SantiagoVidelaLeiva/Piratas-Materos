@@ -7,7 +7,11 @@ public class MeleeAttack : AttackBase
     [SerializeField] private LineRenderer beamPrefab; // opcional, para “flash”
     [SerializeField] private float beamLife = 0.1f;  // dura 1–2 frames
 
-
+    private void Awake()
+    {
+        beamPrefab = GameObject.Find("BlueLineRender").GetComponent<LineRenderer>();
+        firePoint = transform.Find("Eyes");
+    }
     protected override void DoAttack(Transform target, Vector3 seenPos)
     {
         if (IsInRange(seenPos))
