@@ -20,6 +20,11 @@ public class UIManager : MonoBehaviour
     [SerializeField] private string suspiciousText = "Suspicious";
     [SerializeField] private string dangerText = "SEEN";
 
+    [Header("UI de Interaccion")]
+    [SerializeField] private GameObject interactPromptPanel;
+    [SerializeField] private TextMeshProUGUI interactPromptText;
+
+
     private void Start()
     {
         // Al inicio del juego, muestra la UI del jugador
@@ -98,6 +103,26 @@ public class UIManager : MonoBehaviour
         if (playerUIPanel != null)
         {
             playerUIPanel.SetActive(false);
+        }
+    }
+
+    public void ShowInteractPrompt(string message)
+    {
+        if (interactPromptPanel != null)
+        {
+            interactPromptPanel.SetActive(true);
+            if (interactPromptText != null)
+            {
+                interactPromptText.text = message;
+            }
+        }
+    }
+
+    public void HideInteractPrompt()
+    {
+        if (interactPromptPanel != null)
+        {
+            interactPromptPanel.SetActive(false);
         }
     }
 }
