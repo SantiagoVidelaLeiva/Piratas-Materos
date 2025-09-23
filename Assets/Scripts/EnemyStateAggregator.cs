@@ -20,6 +20,7 @@ public class EnemyStateAggregator : MonoBehaviour
             if (enemy != null)
             {
                 enemy.OnStateChange += OnEnemyStateChange;
+                enemy.OnEnemyDestroyed += () => OnEnemyDestroyed(enemy);
             }
         }
     }
@@ -32,14 +33,23 @@ public class EnemyStateAggregator : MonoBehaviour
             if (enemy != null)
             {
                 enemy.OnStateChange -= OnEnemyStateChange;
+                enemy.OnEnemyDestroyed -= () => OnEnemyDestroyed(enemy);
             }
         }
+    }
+
+    private void OnEnemyDestroyed(EnemyControllerBase enemy)
+    {
+        allEnemies.Remove(enemy);
+        OnEnemyStateChange(EnemyControllerBase.EnemyState.Patrolling);
     }
 
     private void OnEnemyStateChange(EnemyControllerBase.EnemyState enemyState)
     {
         // Determina el estado de amenaza ms alto entre todos los enemigos
         EnemyControllerBase.EnemyState highestState = EnemyControllerBase.EnemyState.Patrolling;
+
+        allEnemies.RemoveAll(item => item == null);
 
         foreach (var enemy in allEnemies)
         {

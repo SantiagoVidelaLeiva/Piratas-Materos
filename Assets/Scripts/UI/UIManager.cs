@@ -1,5 +1,6 @@
 using UnityEngine;
 using static System.Net.Mime.MediaTypeNames;
+using TMPro;
 
 public class UIManager : MonoBehaviour
 {
@@ -12,6 +13,17 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Sprite patrollingEyeSprite;
     [SerializeField] private Sprite suspiciousEyeSprite;
     [SerializeField] private Sprite dangerEyeSprite;
+
+    [Header("UI de Texto de Estado")]
+    [SerializeField] private TextMeshProUGUI statusText;
+    [SerializeField] private string patrollingText = "Undetected";
+    [SerializeField] private string suspiciousText = "Suspicious";
+    [SerializeField] private string dangerText = "SEEN";
+
+    [Header("UI de Interaccion")]
+    [SerializeField] private GameObject interactPromptPanel;
+    [SerializeField] private TextMeshProUGUI interactPromptText;
+
 
     private void Start()
     {
@@ -50,6 +62,22 @@ public class UIManager : MonoBehaviour
                 eyeImage.sprite = dangerEyeSprite;
                 break;
         }
+
+        if (statusText != null)
+        {
+            switch (state)
+            {
+                case EnemyControllerBase.EnemyState.Patrolling:
+                    statusText.text = patrollingText;
+                    break;
+                case EnemyControllerBase.EnemyState.Suspicious:
+                    statusText.text = suspiciousText;
+                    break;
+                case EnemyControllerBase.EnemyState.Danger:
+                    statusText.text = dangerText;
+                    break;
+            }
+        }
     }
 
     // Método para mostrar la UI del jugador y ocultar la del hacker
@@ -75,6 +103,26 @@ public class UIManager : MonoBehaviour
         if (playerUIPanel != null)
         {
             playerUIPanel.SetActive(false);
+        }
+    }
+
+    public void ShowInteractPrompt(string message)
+    {
+        if (interactPromptPanel != null)
+        {
+            interactPromptPanel.SetActive(true);
+            if (interactPromptText != null)
+            {
+                interactPromptText.text = message;
+            }
+        }
+    }
+
+    public void HideInteractPrompt()
+    {
+        if (interactPromptPanel != null)
+        {
+            interactPromptPanel.SetActive(false);
         }
     }
 }
