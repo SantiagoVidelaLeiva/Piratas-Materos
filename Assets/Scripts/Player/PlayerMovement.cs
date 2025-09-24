@@ -1,12 +1,11 @@
 ﻿using UnityEngine;
 
-[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
 public class PlayerMovement : MonoBehaviour, IHeightProvider
 {
-    // ─────────────────────────── Configuración / Referencias ───────────────────────────
     [Header("Facing")]
     [SerializeField] CameraOrbit _camOrbit;
-    [SerializeField] float _faceLerp = 8f;                  // Suaviza el movimiento
+    [SerializeField] float _faceLerp = 8f;
     [SerializeField] Transform _target;
 
     [Header("Animación")]
@@ -15,16 +14,16 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
 
     [Header("Visual (offset)")]
     [SerializeField] Transform _visual;
-    [SerializeField] float _visualYOffset = -0.04f; // ajustar visual para que los pies toquen el piso
+    [SerializeField] float _visualYOffset = -0.04f;
 
-    // ───────────────────────────────── Movimiento ──────────────────────────────────────
     [Header("Movimiento")]
-    CharacterController _cc;
+    Rigidbody _rb;
+    CapsuleCollider _col;
     [SerializeField] float _walkSpeed = 4.5f;
     [SerializeField] float _crouchSpeed = 1.2f;
     [SerializeField] float _runSpeed = 6.5f;
+
     Vector3 _lastGroundWorld;
-    [SerializeField] bool _isFalling;
 
     [Header("Inputs")]
     KeyCode _runKey = KeyCode.LeftShift;
@@ -34,29 +33,27 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
     [SerializeField] float _standingHeight = 1.8f;
     [SerializeField] float _crouchingHeight = 1.2f;
     public bool IsCrouching { get; private set; }
-    
-    [Header("Scripts")]                            // Referencia al script de gravedad
+
+    [Header("Scripts")]
     [SerializeField] PlayerGravity _playerGravity;
-
-
 
     public float GetEyeHeight() => IsCrouching ? _crouchingHeight : _standingHeight;
 
-    // ──────────────────────────────── Estado runtime ───────────────────────────────────
     enum MovementState { Walk, Run, Crouch }
     MovementState _state;
-    
+
     bool _isRunning;
     float _lastHorizontalSpeed;
 
-
-
-    // ─────────────────────────────────── Lifecycle ─────────────────────────────────────
     void Awake()
     {
-        _cc = GetComponent<CharacterController>();
-        _cc.height = _standingHeight;
-        _cc.center = new Vector3(0, _standingHeight / 2f, 0);
+        _rb = GetComponent<Rigidbody>();
+        _rb.freezeRotation = true;   // para no volcar
+        _rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+        _col = GetComponent<CapsuleCollider>();
+        _col.height = _standingHeight;
+        _col.center = new Vector3(0, _standingHeight / 2f, 0);
 
         if (!_anim) _anim = GetComponentInChildren<Animator>();
         if (_anim) _anim.applyRootMotion = false;
@@ -65,8 +62,6 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
         if (_visual) _visual.localPosition = new Vector3(0f, _visualYOffset, 0f);
 
         if (!_playerGravity) _playerGravity = GetComponent<PlayerGravity>();
-
-
     }
 
     void Update()
@@ -74,116 +69,105 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
         UpdateState();
         Crouch();
         Run();
-        Move();
-        
-    }
-
-    void LateUpdate()
-    {
         UpdateAnim();
     }
 
-    // ──────────────────────────────────── Lógica ───────────────────────────────────────
+    void FixedUpdate()
+    {
+        Move();
+    }
 
     void Move()
     {
-        // Input
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
-        Vector3 input = new Vector3(h, 0f, v);
-        input = Vector3.ClampMagnitude(input, 1f); // Normalizo
-
-        // Sin control en el aire
-        if (!_cc.isGrounded)
-            input = Vector3.zero;
+        Vector3 input = new (h, 0f, v);
+        input = Vector3.ClampMagnitude(input, 1f); // Normalizo.
 
         // Dirección relativa a la cámara. Quiero mover mi personaje con respecto a mi camara
         Vector3 camForward = _camOrbit.ForwardOnPlane(); // Llamo al metodo para conseguir X , Z de la camara (0 , 0 , 1f) si miro al norte . Es una sola direccion
-        Vector3 camRight = Vector3.Cross(Vector3.up, camForward).normalized; // Cross da el producto cruzado, es una cuenta matematica para girar un vector perpendicularmente 90º y asi conseguir movimiento de derecha a izquierda con respecto a mi camara
+        Vector3 camRight = Vector3.Cross(Vector3.up, camForward).normalized; // Cross da el producto cruzado, es una cuenta matematica para girar un vector perpendicularmente 90º
+                                                                             // y asi conseguir movimiento de derecha a izquierda con respecto a mi camara
         Vector3 moveDirection = camForward * input.z + camRight * input.x; // Lo sumo para ir en diagonal pero siempre con respecto a la camara
 
-        // Velocidad
         float currentSpeed = GetCurrentSpeed();
+        Vector3 horiz = moveDirection * currentSpeed;
 
-        // Movimiento final
-        Vector3 world = moveDirection * currentSpeed;
-        if (_cc.isGrounded)
-            _lastGroundWorld = world;
-        Vector3 horiz = _cc.isGrounded ? world : _lastGroundWorld;
+        // Velocidad final (horizontal + gravedad)
+        Vector3 total = horiz;
 
-        Vector3 total = horiz + _playerGravity.VerticalVelocity; // gravedad
-        _cc.Move(total * Time.deltaTime);
+        // Movimiento con Rigidbody
+        _rb.MovePosition(_rb.position + total * Time.fixedDeltaTime);
+        _lastHorizontalSpeed = horiz.magnitude;
 
-        _lastHorizontalSpeed = new Vector3(_cc.velocity.x, 0f, _cc.velocity.z).magnitude;
-
-        // === FACING ===
-
-        if (_cc.isGrounded && _rotateToMoveDir && moveDirection.sqrMagnitude > 0.0001f)
+        // Facing
+        if (_rotateToMoveDir && moveDirection.sqrMagnitude > 0.0001f)
         {
             Quaternion targetRot = Quaternion.LookRotation(moveDirection, Vector3.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, _faceLerp * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, _faceLerp * Time.fixedDeltaTime);
         }
     }
-
-
 
     void UpdateAnim()
     {
         if (!_anim) return;
 
-        // Normalizamos 0..1 respecto a runSpeed
+        // Clamp limita un valor para que quede entre 0 y 1 respecto a runSpeed.
         float speed01 = Mathf.Clamp01(_lastHorizontalSpeed / _runSpeed);
-
         // Suavizado para que no “salte” la mezcla
-        float target = _cc.isGrounded ? speed01 : 0f;
-        float dampTime = _cc.isGrounded ? 0.12f : 0f;   // suave en suelo, instantáneo en aire
+        float target = IsGrounded() ? speed01 : 0f;
+        float dampTime = IsGrounded() ? 0.12f : 0f;
+
         _anim.SetFloat("Speed01", target, dampTime, Time.deltaTime);
-
         _anim.SetBool("IsCrouching", IsCrouching);
-        _anim.SetBool("IsGrounded", _cc.isGrounded);
-
-
+        _anim.SetBool("IsGrounded", IsGrounded());
     }
 
     void UpdateState()
     {
-        if (IsCrouching)
+        if (IsCrouching) 
             _state = MovementState.Crouch;
-        else if (_isRunning)
+        else if (_isRunning) 
             _state = MovementState.Run;
-        else
+        else 
             _state = MovementState.Walk;
     }
 
-    float GetCurrentSpeed() // Metodo para conseguir la velocidad actual del personaje
+    float GetCurrentSpeed()
     {
         switch (_state)
         {
-            case MovementState.Crouch:
-                return _crouchSpeed;        // No hay break por que el return me devuelve lo esperado y sale del switch
-            case MovementState.Run:
+            case MovementState.Crouch: 
+                return _crouchSpeed;
+            case MovementState.Run: 
                 return _runSpeed;
-            default:
+            default: 
                 return _walkSpeed;
         }
     }
+
     void Crouch()
     {
-        if (!_cc.isGrounded) return;
+        if (!IsGrounded()) return;
 
         if (Input.GetKeyDown(_crouchKey))
         {
-            IsCrouching = !IsCrouching; // toggle
+            IsCrouching = !IsCrouching;
             float h = IsCrouching ? _crouchingHeight : _standingHeight;
-            _cc.height = h;
-            _cc.center = new Vector3(0, h / 2f, 0);
+            _col.height = h;
+            _col.center = new Vector3(0, h / 2f, 0);
         }
     }
 
     void Run()
     {
-        if (!_cc.isGrounded) return;
-
+        if (!IsGrounded()) return;
         _isRunning = Input.GetKey(_runKey);
+    }
+
+    bool IsGrounded()
+    {
+        // Simple ground check con un raycast
+        return Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, 0.3f);
     }
 }
