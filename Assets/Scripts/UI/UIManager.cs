@@ -24,6 +24,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject interactPromptPanel;
     [SerializeField] private TextMeshProUGUI interactPromptText;
 
+    [Header("UI de Vidas")]
+    [SerializeField] private TextMeshProUGUI livesText;
 
     private void Start()
     {
@@ -34,6 +36,13 @@ public class UIManager : MonoBehaviour
         {
             enemyStateAggregator.OnGlobalStateChange += OnEnemyStateChange;
         }
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnLivesChanged += UpdateLivesUI;
+            // Actualizamos la UI con las vidas iniciales
+            UpdateLivesUI(GameManager.Instance.CurrentLives);
+        }
     }
 
     private void OnDestroy()
@@ -43,7 +52,22 @@ public class UIManager : MonoBehaviour
         {
             enemyStateAggregator.OnGlobalStateChange -= OnEnemyStateChange;
         }
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnLivesChanged -= UpdateLivesUI;
+        }
     }
+
+    // metodo para actualizar vidas
+    public void UpdateLivesUI(int lives)
+    {
+        if (livesText != null)
+        {
+            livesText.text = lives.ToString();
+        }
+    }
+
 
     // Este metodo es llamado por el agregador de estados enemigo con el estado mas grave.
     private void OnEnemyStateChange(EnemyControllerBase.EnemyState state)

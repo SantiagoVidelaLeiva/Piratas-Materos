@@ -43,7 +43,6 @@ public class Health : MonoBehaviour, IDamageable
     private void Die()
     {
         Debug.Log($"{gameObject.name} murió.");
-        SceneManager.LoadScene("Lose");   //  Notifico a todos
-        //gameObject.SetActive(false);
+        GameManager.Instance.OnPlayerDied();
     }
 }
