@@ -3,11 +3,11 @@ using UnityEngine;
 
 public class SistemaDeCamaras : MonoBehaviour
 {
-    [SerializeField] private Camera thirdPersonCamera;        // Tu cámara principal del personaje
-    [SerializeField] private Camera[] securityCameras;        // Lista de cámaras de seguridad
-    [SerializeField] private PlayerMovement playerMovement;    // Referencia al script de movimiento
-    [SerializeField] private CameraOrbit cameraOrbit;          // Referencia al script de órbita
-    [SerializeField] private UIManager uiManager;              // Referencia al UIManager
+    [SerializeField] private Camera thirdPersonCamera;             // Tu cámara principal del personaje
+    [SerializeField] private CameraInteractable[] securityCameras; // Lista de cámaras de seguridad
+    [SerializeField] private PlayerMovement playerMovement;        // Referencia al script de movimiento
+    [SerializeField] private CameraOrbit cameraOrbit;              // Referencia al script de órbita
+    [SerializeField] private UIManager uiManager;                  // Referencia al UIManager
 
     private bool inSecurityMode = false;
     private int currentSecurityCamIndex = 0;
@@ -51,6 +51,11 @@ public class SistemaDeCamaras : MonoBehaviour
             {
                 PreviousCamera();
             }
+
+            else if (Input.GetKeyDown(KeyCode.E)) // logica para hackear objetos hackeables
+            {
+                TryHack();
+            }
         }
     }
 
@@ -67,6 +72,7 @@ public class SistemaDeCamaras : MonoBehaviour
         {
             currentSecurityCamIndex = 0;
             UpdateSecurityCameras();
+            CheckForHackerInteractable();
         }
 
         // === GESTIÓN DE UI ===
@@ -95,6 +101,7 @@ public class SistemaDeCamaras : MonoBehaviour
         if (uiManager != null)
         {
             uiManager.ShowPlayerUI();
+            uiManager.HideInteractPrompt();
         }
 
         UnityEngine.Debug.Log("Regresando al jugador.");
@@ -104,12 +111,14 @@ public class SistemaDeCamaras : MonoBehaviour
     {
         currentSecurityCamIndex = (currentSecurityCamIndex + 1) % securityCameras.Length;
         UpdateSecurityCameras();
+        CheckForHackerInteractable();
     }
 
     void PreviousCamera()
     {
         currentSecurityCamIndex = (currentSecurityCamIndex - 1 + securityCameras.Length) % securityCameras.Length;
         UpdateSecurityCameras();
+        CheckForHackerInteractable();
     }
 
     void UpdateSecurityCameras()
@@ -117,9 +126,9 @@ public class SistemaDeCamaras : MonoBehaviour
         // Activa solo la cámara actual y desactiva el resto
         for (int i = 0; i < securityCameras.Length; i++)
         {
-            if (securityCameras[i] != null)
+            if (securityCameras[i].Camera != null)
             {
-                securityCameras[i].enabled = (i == currentSecurityCamIndex);
+                securityCameras[i].Camera.enabled = (i == currentSecurityCamIndex);
             }
         }
     }
@@ -127,14 +136,15 @@ public class SistemaDeCamaras : MonoBehaviour
     void DisableAllSecurityCameras()
     {
         // Desactiva todas las cámaras en la lista
-        foreach (Camera cam in securityCameras)
+        foreach (CameraInteractable cam in securityCameras)
         {
-            if (cam != null)
+            if (cam.Camera != null)
             {
-                cam.enabled = false;
+                cam.Camera.enabled = false;
             }
         }
     }
+
 
     void EnableThirdPersonView()
     {
@@ -142,6 +152,31 @@ public class SistemaDeCamaras : MonoBehaviour
         if (thirdPersonCamera != null)
         {
             thirdPersonCamera.enabled = true;
+        }
+    }
+
+    private void CheckForHackerInteractable()
+    {
+        if (securityCameras[currentSecurityCamIndex].Interactable != null)
+        {
+            uiManager.ShowInteractPrompt(securityCameras[currentSecurityCamIndex].Interactable.InteractPrompt);
+        }
+        else
+        {
+            uiManager.HideInteractPrompt();
+        }
+    }
+
+    private void TryHack()
+    {
+        IInteractable currentInteractable = securityCameras[currentSecurityCamIndex].Interactable;
+        if (currentInteractable != null)
+        {
+            bool interactionFinal = currentInteractable.Interact();
+            if (interactionFinal)
+            {
+                uiManager.HideInteractPrompt();
+            }
         }
     }
 }
