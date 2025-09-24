@@ -6,7 +6,11 @@ public class SingleUseSwitch : MonoBehaviour, IInteractable
 {
     private bool _hasBeenUsed = false;
 
+    [SerializeField] private string _interactPrompt = "Press E to use";
+
     public event System.Action OnActivated;
+
+    public string InteractPrompt => _interactPrompt;
 
     public bool Interact()
     {
