@@ -1,45 +1,30 @@
-using System;
 using System.Diagnostics;
 using UnityEngine;
+using UnityEngine.Events;
 
+// Este script es ahora un 'activador de color' genérico que puede ser llamado desde cualquier UnityEvent (como el de SingleUseSwitch o HackerInteractable).
 public class SwitchColorChanger : MonoBehaviour
 {
-    [SerializeField] private SingleUseSwitch _switch;
+
     [SerializeField] private ChangeColor _objectToColor;
-    [SerializeField] private Color _colorToSet = Color.green;
+    [SerializeField] private Color _colorToSet = Color.gray;
 
-    private void Awake()
+
+    // Este método es el nuevo punto de entrada. Lo hacemos público
+    // para que pueda ser arrastrado y conectado en el Inspector de UnityEvents.
+    public void ChangeObjectColor()
     {
-        // Asegura que las referencias existan.
-        if (_switch == null)
+        if (_objectToColor != null)
         {
-            UnityEngine.Debug.LogError("Referencia a SingleUseSwitch no encontrada. " +
-                           "Por favor, asignala en el Inspector.", this);
-            return;
+            _objectToColor.SetColor(_colorToSet);
+        }
+        else
+        {
+            UnityEngine.Debug.LogError("Referencia a ChangeColor no encontrada en el Inspector de " + gameObject.name, this);
         }
 
-        if (_objectToColor == null)
-        {
-            UnityEngine.Debug.LogError("Referencia a ChangeColor no encontrada. " +
-                           "Por favor, asignala en el Inspector.", this);
-            return;
-        }
-
-        _switch.OnActivated += OnSwitchActivated;
-    }
-
-    private void OnDestroy()
-    {
-        if (_switch != null)
-        {
-            _switch.OnActivated -= OnSwitchActivated;
-        }
-    }
-
-    private void OnSwitchActivated()
-    {
-        _objectToColor.SetColor(_colorToSet);
-
+        // Desactivar el componente después de un uso.
+        // Puedes comentar esta línea si quieres que el objeto pueda cambiar de color varias veces.
         this.enabled = false;
     }
 }
