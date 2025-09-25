@@ -93,6 +93,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void WinGame()
+    {
+        // Carga la escena de victoria.
+        SceneManager.LoadScene("Win");
+    }
+
     // NUEVO: Método público para restablecer las vidas a su máximo.
     // Esto debería ser llamado por el script del menú principal cuando el jugador
     // inicia una nueva partida.

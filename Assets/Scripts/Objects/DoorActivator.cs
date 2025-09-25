@@ -1,9 +1,13 @@
 using System.Diagnostics;
 using UnityEngine;
+using UnityEngine.Events; // Necesario para usar UnityEvent
 
+// Este script controla una puerta que requiere múltiples activaciones.
 public class DoorActivator : MonoBehaviour
 {
-    [SerializeField] private SingleUseSwitch[] _requiredSwitches;
+    // Nueva variable para establecer el nmero de activaciones requeridas.
+    // Esto hace que la puerta sea dinmica.
+    [SerializeField] private int _requiredActivations = 1;
 
     [Header("Configuracion de la Puerta")]
     [SerializeField] private Transform _doorObject;
@@ -12,23 +16,27 @@ public class DoorActivator : MonoBehaviour
 
     private Vector3 _startPosition;
     private bool _isOpening = false;
+
+    // Un contador de activaciones que es de instancia.
     private int _activatedSwitchesCount = 0;
 
     private void Awake()
     {
-        _startPosition = _doorObject.localPosition;
-
-        if (_requiredSwitches.Length == 0)
+        if (_doorObject == null)
         {
-            UnityEngine.Debug.LogError("Referencia a la palanca (SingleUseSwitch) no encontrada. " +
-                           "Asignala en el Inspector.", this);
+            UnityEngine.Debug.LogError("Referencia a la puerta (_doorObject) no encontrada.", this);
+            enabled = false;
             return;
         }
 
-        foreach (SingleUseSwitch s in _requiredSwitches)
-        {
-            s.OnActivated += OnSwitchActivated;
-        }
+        _startPosition = _doorObject.localPosition;
+
+        //  Eliminamos la suscripción en cdigo.
+        // La conexin ahora se har en el Inspector.
+        // foreach (SingleUseSwitch s in _requiredSwitches)
+        // {
+        //     s.OnActivated += OnSwitchActivated;
+        // }
     }
 
     private void Update()
@@ -43,33 +51,36 @@ public class DoorActivator : MonoBehaviour
         }
     }
 
-    private void OnSwitchActivated()
+    //  Este es el mtodo que se conectar a los UnityEvents de los interruptores.
+    public void OnSwitchActivated()
     {
+        //  Verificamos si la puerta ya se est abriendo para evitar activaciones adicionales.
+        if (_isOpening)
+        {
+            return;
+        }
         _activatedSwitchesCount++;
 
-        if (_activatedSwitchesCount >= _requiredSwitches.Length)
+        //  Ahora comparamos con la nueva variable dinmica.
+        if (_activatedSwitchesCount >= _requiredActivations)
         {
-            UnityEngine.Debug.Log("Door activated by all switches!");
+            UnityEngine.Debug.Log("Puerta activada por todos los interruptores!");
             _isOpening = true;
 
-            foreach (SingleUseSwitch s in _requiredSwitches)
-            {
-                s.OnActivated -= OnSwitchActivated;
-            }
+            //  Eliminamos la desuscripcin de eventos.
+            // Esto ya no es necesario porque no hay una suscripcin en el cdigo.
+            // foreach (SingleUseSwitch s in _requiredSwitches)
+            // {
+            //    s.OnActivated -= OnSwitchActivated;
+            // }
         }
     }
 
-    private void OnDestroy()
+    //  Mtodo para reiniciar la puerta.
+    public void ResetDoor()
     {
-        if (_activatedSwitchesCount < _requiredSwitches.Length)
-        {
-            foreach (SingleUseSwitch s in _requiredSwitches)
-            {
-                if (s != null)
-                {
-                    s.OnActivated -= OnSwitchActivated;
-                }
-            }
-        }
+        _activatedSwitchesCount = 0;
+        _isOpening = false;
+        _doorObject.localPosition = _startPosition;
     }
 }
