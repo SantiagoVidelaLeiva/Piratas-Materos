@@ -3,7 +3,6 @@ using UnityEngine;
 public class SniperAttack : AttackBase
 {
     [Header("High-Ranged")]
-    [SerializeField] private float aimTime = 0.2f;
     [SerializeField] private float spreadDegrees = 2.5f;
     [SerializeField] private LineRenderer beamPrefab;
     [SerializeField] private float beamLife = 0.1f;

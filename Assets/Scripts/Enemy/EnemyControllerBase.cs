@@ -21,7 +21,6 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     [Header("Patrol")]
     [SerializeField] private Transform[] patrolPoints;
     [SerializeField] private float waypointTolerance = 0.6f;
-    [SerializeField] private bool loopPatrol = true;
     private int _patrolIndex;
 
     [Header("Suspicion (Simple)")]
@@ -240,7 +239,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         {
             agent.SetDestination(_lastKnownPos);
 
-            if (!agent.pathPending && agent.remainingDistance <= waypointTolerance)
+            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.1f)
             {
                 SetState(EnemyState.Suspicious);
             }
@@ -310,23 +309,24 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         Vector3 origin = GetEyesTransformPos();
         Vector3 target = GetTargetAimPoint(player);
         Vector3 dir = target - origin;
-
         float dist = dir.magnitude;
         if (dist > visionRange) return false;
 
         dir = dir.normalized;
 
+
+        int mask = obstacleMask & ~(1 << player.gameObject.layer); // Excluir la capa del Player del mask de obstáculos
+
         float angle = Vector3.Angle(GetForward(), dir);
         if (angle > visionAngle * 0.5f) return false;
 
-        if (Physics.Raycast(origin, dir, out RaycastHit hit, dist + 0.1f, obstacleMask))
-        {
+        if (Physics.Raycast(origin, dir, out RaycastHit hit, dist + 0.1f, mask, QueryTriggerInteraction.Ignore))
             return false;
-        }
 
         seenPos = target;
         return true;
     }
+
 
     private bool TryNearDetectPlayer(out Vector3 sensedPos)
     {
