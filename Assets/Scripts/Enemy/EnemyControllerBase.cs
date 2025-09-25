@@ -84,11 +84,25 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             nearDetect = transform.Find("NearDetect");
 
         _iattackStrategy = GetComponent<IAttackStrategy>();
+
+        NoiseSystem.OnNoise += OnNoiseHeard;
     }
+
 
     private void OnDestroy()
     {
-        OnEnemyDestroyed?.Invoke();                              // <-- NUEVO: Notifica a los oyentes antes de ser destruido.
+        NoiseSystem.OnNoise -= OnNoiseHeard;
+        OnEnemyDestroyed?.Invoke();
+    }
+
+    private void OnNoiseHeard(Vector3 pos, float radius)
+    {
+        if ((pos - transform.position).sqrMagnitude <= radius * radius)
+        {
+            // Solo si no ve al player y no está en Danger, o permití override según tu diseño
+            if (_state != EnemyState.Danger)
+                Investigate(pos);
+        }
     }
 
     private void Update()
@@ -138,7 +152,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         }
     }
 
-    protected virtual void TickSuspicious(bool seesPlayer, Vector3 seenPos) // ← antes private
+    protected virtual void TickSuspicious(bool seesPlayer, Vector3 seenPos)
     {
         if (seesPlayer)
         {
@@ -154,55 +168,50 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             if (!agent.pathPending && agent.remainingDistance <= waypointTolerance)
             {
                 _movingToSuspicionPoint = false;
-                _scanActive = true;
-                _scanTimer = 0f;
-                agent.isStopped = true;
-                agent.updateRotation = false;
-                _scanBaseYaw = transform.eulerAngles.y;
+                BeginScan();
             }
             return;
         }
 
         if (_scanActive)
         {
-            _scanTimer += Time.deltaTime;
-
-            float angle = _scanBaseYaw + Mathf.Sin(_scanTimer * 2f * Mathf.PI * scanOscillationsPerSecond) * scanYawAmplitude;
-            transform.rotation = Quaternion.Euler(0f, angle, 0f);
-
-            if (_scanTimer >= scanDuration)
+            bool finished = UpdateScan();
+            if (finished)
             {
-                _scanActive = false;
-                agent.isStopped = false;
-                agent.updateRotation = true;
-                return;
+                // Si tenés puntos pendientes, andá al siguiente
+                Transform next = PopNearest(_pendingSuspicion, transform.position);
+                if (next != null)
+                {
+                    _movingToSuspicionPoint = true;
+                    agent.isStopped = false;
+                    agent.updateRotation = true;
+                    agent.SetDestination(next.position);
+                }
+                else
+                {
+                    SetState(EnemyState.Patrolling);
+                }
             }
             return;
         }
 
-        if (!_scanActive && _suspiciousList != null && _suspiciousList.Count > 0)
+        if (_pendingSuspicion != null && _pendingSuspicion.Count > 0)
         {
             Transform next = PopNearest(_pendingSuspicion, transform.position);
             if (next != null)
             {
                 _movingToSuspicionPoint = true;
-
                 agent.isStopped = false;
                 agent.updateRotation = true;
                 agent.SetDestination(next.position);
                 return;
             }
         }
-        else
-        {
-            agent.isStopped = false;
-            agent.updateRotation = true;
-            _scanActive = false;
-            SetState(EnemyState.Patrolling);
-        }
+
+        SetState(EnemyState.Patrolling);
     }
 
-    protected virtual void TickDanger(bool seesPlayer, Vector3 seenPos) // ← antes private
+    protected virtual void TickDanger(bool seesPlayer, Vector3 seenPos) 
     {
         agent.speed = chaseSpeed;
 
@@ -270,7 +279,26 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
 
         OnStateChange?.Invoke(_state);
     }
+    public void Investigate(Vector3 worldPoint, float customScanDuration = -1f, float customYawAmp = -1f, float customFreq = -1f)
+    {
+        // Opcionalmente permitir tuning por evento
+        if (customScanDuration > 0f) scanDuration = customScanDuration;
+        if (customYawAmp > 0f) scanYawAmplitude = customYawAmp;
+        if (customFreq > 0f) scanOscillationsPerSecond = customFreq;
 
+        _lastKnownPos = worldPoint;
+        _pendingSuspicion = new List<Transform>(); // vacía para que vaya directo al punto
+        _movingToSuspicionPoint = true;
+
+        agent.isStopped = false;
+        agent.updateRotation = true;
+        agent.stoppingDistance = 0.1f;
+        agent.SetDestination(worldPoint);
+
+        // Entrá a SUSPICIOUS si no estaba ya
+        if (_state != EnemyState.Suspicious)
+            SetState(EnemyState.Suspicious);
+    }
     // ============================
     //          Perception
     // ============================
@@ -377,6 +405,32 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         Transform nearest = list[bestIdx];
         list.RemoveAt(bestIdx);
         return nearest;
+    }
+    // EnemyControllerBase.cs (agregar helpers)
+    private void BeginScan()
+    {
+        _scanActive = true;
+        _scanTimer = 0f;
+        agent.isStopped = true;
+        agent.updateRotation = false;
+        _scanBaseYaw = transform.eulerAngles.y;
+    }
+
+    private bool UpdateScan()
+    {
+        _scanTimer += Time.deltaTime;
+
+        float angle = _scanBaseYaw + Mathf.Sin(_scanTimer * 2f * Mathf.PI * scanOscillationsPerSecond) * scanYawAmplitude;
+        transform.rotation = Quaternion.Euler(0f, angle, 0f);
+
+        if (_scanTimer >= scanDuration)
+        {
+            _scanActive = false;
+            agent.isStopped = false;
+            agent.updateRotation = true;
+            return true; // terminó
+        }
+        return false; // sigue
     }
 
 
