@@ -57,12 +57,12 @@ public class EnemyStateAggregator : MonoBehaviour
             if (enemy != null && enemy.gameObject.activeInHierarchy)
             {
                 // La lgica de prioridad: Danger > Suspicious > Patrolling
-                if (enemy.currentState == EnemyControllerBase.EnemyState.Danger)
+                if (enemy.CurrentState == EnemyControllerBase.EnemyState.Danger)
                 {
                     highestState = EnemyControllerBase.EnemyState.Danger;
                     break; // No necesitamos chequear ms, es el ms alto
                 }
-                else if (enemy.currentState == EnemyControllerBase.EnemyState.Suspicious && highestState < EnemyControllerBase.EnemyState.Suspicious)
+                else if (enemy.CurrentState == EnemyControllerBase.EnemyState.Suspicious && highestState < EnemyControllerBase.EnemyState.Suspicious)
                 {
                     highestState = EnemyControllerBase.EnemyState.Suspicious;
                 }
