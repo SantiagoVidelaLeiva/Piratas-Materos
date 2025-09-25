@@ -51,7 +51,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     //        Runtime State
     // ============================
     private EnemyState _state = EnemyState.Patrolling;
-    public EnemyState currentState { get { return _state; } } // Como otros scripts ven la misma variable
+    public EnemyState CurrentState { get { return _state; } } // Como otros scripts ven la misma variable
 
     public event System.Action<EnemyState> OnStateChange;
     public event System.Action OnEnemyDestroyed;
@@ -240,7 +240,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         {
             agent.SetDestination(_lastKnownPos);
 
-            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.1f)
+            if (!agent.pathPending && agent.remainingDistance <= waypointTolerance)
             {
                 SetState(EnemyState.Suspicious);
             }
