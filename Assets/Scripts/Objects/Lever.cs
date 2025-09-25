@@ -8,6 +8,10 @@ public class Lever : MonoBehaviour, IInteractable
 
     private bool _isActivated = false;
 
+    [SerializeField] private string _interactPrompt = "Press E to use ";
+
+    public string InteractPrompt => _interactPrompt;
+
     // Defines the specific functionality of this object.
     public bool Interact()
     {

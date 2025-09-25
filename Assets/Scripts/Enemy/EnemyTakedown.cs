@@ -6,6 +6,8 @@ public class EnemyTakedown : MonoBehaviour, IInteractable
     private CharacterHealth _enemyHealth;
     private bool _hasBeenUsed = false;
 
+    [SerializeField] private string _interactPrompt = "E to takedown";
+
     private void Awake()
     {
         _enemyHealth = GetComponentInParent<CharacterHealth>();
@@ -14,6 +16,8 @@ public class EnemyTakedown : MonoBehaviour, IInteractable
             UnityEngine.Debug.LogError("No se encontró el componente CharacterHealth en este objeto o en su padre.");
         }
     }
+
+    public string InteractPrompt => _interactPrompt;
 
     public bool Interact()
     {
