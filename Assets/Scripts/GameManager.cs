@@ -97,6 +97,8 @@ public class GameManager : MonoBehaviour
     {
         // Carga la escena de victoria.
         SceneManager.LoadScene("Win");
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     // NUEVO: Método público para restablecer las vidas a su máximo.
