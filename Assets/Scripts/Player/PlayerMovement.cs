@@ -27,6 +27,7 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
 
     [Header("Inputs")]
     KeyCode _runKey = KeyCode.LeftShift;
+    KeyCode _attackInput = KeyCode.Mouse0;
 
     [Header("Agacharse")]
     KeyCode _crouchKey = KeyCode.LeftControl;
@@ -69,6 +70,7 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
         UpdateState();
         Crouch();
         Run();
+        Attack();
         UpdateAnim();
     }
 
@@ -81,7 +83,7 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
     {
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
-        Vector3 input = new (h, 0f, v);
+        Vector3 input = new(h, 0f, v);
         input = Vector3.ClampMagnitude(input, 1f); // Normalizo.
 
         // Dirección relativa a la cámara. Quiero mover mi personaje con respecto a mi camara
@@ -125,11 +127,11 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
 
     void UpdateState()
     {
-        if (IsCrouching) 
+        if (IsCrouching)
             _state = MovementState.Crouch;
-        else if (_isRunning) 
+        else if (_isRunning)
             _state = MovementState.Run;
-        else 
+        else
             _state = MovementState.Walk;
     }
 
@@ -137,11 +139,11 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
     {
         switch (_state)
         {
-            case MovementState.Crouch: 
+            case MovementState.Crouch:
                 return _crouchSpeed;
-            case MovementState.Run: 
+            case MovementState.Run:
                 return _runSpeed;
-            default: 
+            default:
                 return _walkSpeed;
         }
     }
@@ -169,5 +171,13 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
     {
         // Simple ground check con un raycast
         return Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, 0.3f);
+    }
+    
+        void Attack()
+    {
+        if (Input.GetKeyDown(_attackInput))
+        {
+            _anim.SetTrigger("Attack");
+        }
     }
 }
