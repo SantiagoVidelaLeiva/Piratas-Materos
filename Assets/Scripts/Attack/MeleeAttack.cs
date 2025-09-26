@@ -4,8 +4,8 @@ using static UnityEngine.UI.Image;
 public class MeleeAttack : AttackBase
 {
     [Header("Melee")]
-    [SerializeField] private LineRenderer beamPrefab; // opcional, para “flash”
-    [SerializeField] private float beamLife = 0.1f;  // dura 1–2 frames
+    [SerializeField] private LineRenderer beamPrefab; 
+    [SerializeField] private float beamLife = 0.1f;  
 
     private void Awake()
     {
@@ -35,8 +35,8 @@ public class MeleeAttack : AttackBase
         beam.positionCount = 2;
         beam.SetPosition(0, a);
         beam.SetPosition(1, b);
-        yield return null;                           // 1 frame
-        yield return new WaitForSeconds(beamLife);   // breve
+        yield return null;                           
+        yield return new WaitForSeconds(beamLife);   
         Destroy(beam.gameObject);
     }
 }

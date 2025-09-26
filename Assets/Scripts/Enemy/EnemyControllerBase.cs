@@ -28,6 +28,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     [SerializeField] private float scanDuration = 5f;
     [SerializeField] private float scanYawAmplitude = 70f;
     [SerializeField] private float scanOscillationsPerSecond = 0.2f;
+    [SerializeField] private bool _nearestPointSuspicious = true;
 
     [Header("Perception")]
     [SerializeField] private LayerMask obstacleMask = ~0;    // por defecto todo
@@ -98,7 +99,6 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     {
         if ((pos - transform.position).sqrMagnitude <= radius * radius)
         {
-            // Solo si no ve al player y no está en Danger, o permití override según tu diseño
             if (_state != EnemyState.Danger)
                 Investigate(pos);
         }
@@ -106,9 +106,9 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
 
     private void Update()
     {
-        bool seesPlayer = TrySeePlayer(out Vector3 seenPos);
+        bool seesPlayer = TrySeePlayer(out Vector3 seenPos);// Si veo al jugador, consigo su posicion de la cabeza y el bool verdadero
 
-        if (!seesPlayer && TryNearDetectPlayer(out Vector3 sensedPos))
+        if (!seesPlayer && TryNearDetectPlayer(out Vector3 sensedPos)) // Si no lo veo, pero lo veo con la esfera del "olfato"
         {
             seesPlayer = true;
             seenPos = sensedPos;
@@ -133,25 +133,25 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     // ============================
     //        State Machine
     // ============================
-    protected virtual void TickPatrolling(bool seesPlayer, Vector3 seenPos) // ← antes private
+    protected virtual void TickPatrolling(bool seesPlayer, Vector3 seenPos)  // Patrulla
     {
-        agent.speed = patrolSpeed;
+        agent.speed = patrolSpeed; // Ajusto velocidad del agente
 
-        if (seesPlayer)
+        if (seesPlayer) // Si veo al jugador
         {
-            _lastKnownPos = seenPos;
+            _lastKnownPos = seenPos; // Guardo LKP la ultima posicion vista de mi jugador
             SetState(EnemyState.Danger);
             return;
         }
 
         if (patrolPoints != null && patrolPoints.Length > 0)
         {
-            if (!agent.pathPending && agent.remainingDistance <= waypointTolerance)
-                AdvancePatrol();
+            if (!agent.pathPending && agent.remainingDistance <= waypointTolerance)// Waypoint dice si llegue a X metros, considerar que ya llego para evitar vibraciones
+                AdvancePatrol();                                                  // Si puse por inspector puntos de patrulla los recorre
         }
     }
 
-    protected virtual void TickSuspicious(bool seesPlayer, Vector3 seenPos)
+    protected virtual void TickSuspicious(bool seesPlayer, Vector3 seenPos) // Sospecha
     {
         if (seesPlayer)
         {
@@ -160,7 +160,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             return;
         }
 
-        if (_movingToSuspicionPoint)
+        if (_movingToSuspicionPoint) // Es true cuando se setea en SetState
         {
             agent.speed = patrolSpeed * 1.3f;
 
@@ -172,12 +172,11 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             return;
         }
 
-        if (_scanActive)
+        if (_scanActive)   //Llego a LKP ultima posicion conocida y scanea
         {
             bool finished = UpdateScan();
             if (finished)
             {
-                // Si tenés puntos pendientes, andá al siguiente
                 Transform next = PopNearest(_pendingSuspicion, transform.position);
                 if (next != null)
                 {
@@ -194,12 +193,12 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             return;
         }
 
-        if (_pendingSuspicion != null && _pendingSuspicion.Count > 0)
+        if (_pendingSuspicion != null && _pendingSuspicion.Count > 0) // Si tengo puntos de sospecha puestos en el inspector , los recorre.
         {
-            Transform next = PopNearest(_pendingSuspicion, transform.position);
+            Transform next = PopNearest(_pendingSuspicion, transform.position); // Consigo el punto mas cercano despues de haber perdido al jugador
             if (next != null)
             {
-                _movingToSuspicionPoint = true;
+                _movingToSuspicionPoint = true;  // Sube arriba y scanea devuelta en cada punto
                 agent.isStopped = false;
                 agent.updateRotation = true;
                 agent.SetDestination(next.position);
@@ -218,26 +217,26 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         {
             _lastKnownPos = seenPos;
 
-            agent.stoppingDistance = _iattackStrategy.StopDistance;
+            agent.stoppingDistance = _iattackStrategy.StopDistance; // Detiene al agente segun el rango de cada ataque usado en la interface
 
-            float dist = Vector3.Distance(transform.position, seenPos);
-            if (dist > agent.stoppingDistance + 0.05f)
+            float dist = Vector3.Distance(transform.position, seenPos); //Consigo la distancia en metros desde el enemigo al jugador
+            if (dist > agent.stoppingDistance + 0.05f)                  // Si la distancia es mayor al rango del ataque de la interface, seguir persiguiendo
             {
                 agent.SetDestination(player.position);
             }
             else
             {
-                agent.ResetPath();
-                FaceTowards(seenPos);
-                if (_iattackStrategy.CanAttack(player, seenPos))
+                agent.ResetPath();                   // Cancelo la ruta del agente
+                FaceTowards(seenPos);                // Miro hacia adelante donde esta mi jugador
+                if (_iattackStrategy.CanAttack(player, seenPos))     // Llamo a la interface si puedo atacar
                 {
-                    _iattackStrategy.Attack(player, seenPos);
+                    _iattackStrategy.Attack(player, seenPos);  // Ataco
                 }
             }
         }
         else
         {
-            agent.SetDestination(_lastKnownPos);
+            agent.SetDestination(_lastKnownPos);                 // Linea de codigo que mueve al agente al LKP
 
             if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.1f)
             {
@@ -246,7 +245,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         }
     }
 
-    protected virtual void SetState(EnemyState next) // ← antes private
+    protected virtual void SetState(EnemyState next) 
     {
         if (_state == next) return;
 
@@ -278,15 +277,10 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
 
         OnStateChange?.Invoke(_state);
     }
-    public void Investigate(Vector3 worldPoint, float customScanDuration = -1f, float customYawAmp = -1f, float customFreq = -1f)
+    public void Investigate(Vector3 worldPoint)
     {
-        // Opcionalmente permitir tuning por evento
-        if (customScanDuration > 0f) scanDuration = customScanDuration;
-        if (customYawAmp > 0f) scanYawAmplitude = customYawAmp;
-        if (customFreq > 0f) scanOscillationsPerSecond = customFreq;
-
         _lastKnownPos = worldPoint;
-        _pendingSuspicion = new List<Transform>(); // vacía para que vaya directo al punto
+        _pendingSuspicion = new List<Transform>(); // Vacia para que vaya directo al punto
         _movingToSuspicionPoint = true;
 
         agent.isStopped = false;
@@ -294,28 +288,27 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         agent.stoppingDistance = 0.1f;
         agent.SetDestination(worldPoint);
 
-        // Entrá a SUSPICIOUS si no estaba ya
         if (_state != EnemyState.Suspicious)
             SetState(EnemyState.Suspicious);
     }
     // ============================
     //          Perception
     // ============================
-    public bool TrySeePlayer(out Vector3 seenPos)
+    public bool TrySeePlayer(out Vector3 seenPos)  // Raycast en forma de "cono" que devuelve un bool y el vector3 de la cabeza del jugador
     {
         seenPos = Vector3.zero;
         if (!player) return false;
 
-        Vector3 origin = GetEyesTransformPos();
-        Vector3 target = GetTargetAimPoint(player);
-        Vector3 dir = target - origin;
-        float dist = dir.magnitude;
+        Vector3 origin = GetEyesTransformPos(); // Posicion de los ojos del enemigo
+        Vector3 target = GetTargetAimPoint(player); // Posicion de los ojos del jugador
+        Vector3 dir = target - origin;  // Restar 2 vectores3 te da una direccion
+        float dist = dir.magnitude; // Longitud, consigo distancia
         if (dist > visionRange) return false;
 
         dir = dir.normalized;
 
 
-        int mask = obstacleMask & ~(1 << player.gameObject.layer); // Excluir la capa del Player del mask de obstáculos
+        int mask = obstacleMask & ~(1 << player.gameObject.layer); // Excluir la capa del Player del mask de obstaculos
 
         float angle = Vector3.Angle(GetForward(), dir);
         if (angle > visionAngle * 0.5f) return false;
@@ -328,7 +321,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     }
 
 
-    private bool TryNearDetectPlayer(out Vector3 sensedPos)
+    private bool TryNearDetectPlayer(out Vector3 sensedPos) // Olfato, esfera al rededor del enemigo
     {
         sensedPos = Vector3.zero;
         if (!player) return false;
@@ -347,7 +340,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     // ============================
     //          Patrol
     // ============================
-    private void AdvancePatrol()
+    private void AdvancePatrol()  // Patrulla si tengo puntos puestos en el inspector
     {
         if (patrolPoints == null || patrolPoints.Length == 0) return;
         
@@ -361,7 +354,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     // ============================
     //        Target Helpers
     // ============================
-    private Vector3 GetTargetAimPoint(Transform t)
+    private Vector3 GetTargetAimPoint(Transform t)  // Devuelve la posicion de los ojos del jugador
     {
         if (t == null) return Vector3.zero;
         float h = 1.8f;
@@ -372,13 +365,13 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         return t.position + Vector3.up * h;
     }
 
-    private Vector3 GetEyesTransformPos()
+    private Vector3 GetEyesTransformPos() // Devuelve la posicion de los ojos del enemigo
     {
         if (eyes != null) return eyes.position;
         return transform.position + Vector3.up * eyesHeight;
     }
 
-    private Vector3 GetForward()
+    private Vector3 GetForward() // Devuelve un vector de donde esta mirando el enemigo
     {
         return (eyes ? eyes.forward : transform.forward).normalized;
     }
@@ -386,55 +379,62 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     // ============================
     //   Helpers & Misc Utilities
     // ============================
-    private Transform PopNearest(List<Transform> list, Vector3 from)
+    private Transform PopNearest(List<Transform> list, Vector3 from) // Recorre la lista de los puntos de sospecha que pongo en el inspector y devuelve el mas cercano
     {
         if (list == null || list.Count == 0) return null;
 
-        int bestIdx = -1;
-        float best = float.MaxValue;
-
-        for (int i = 0; i < list.Count; i++)
+        if (_nearestPointSuspicious)
         {
-            Transform t = list[i];
-            float d = (t.position - from).sqrMagnitude;
-            if (d < best) { best = d; bestIdx = i; }
+            int bestIdx = -1;
+            float best = float.MaxValue;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                float d = (list[i].position - from).sqrMagnitude;
+                if (d < best) { best = d; bestIdx = i; }
+            }
+
+            if (bestIdx == -1) return null;
+
+            Transform nearest = list[bestIdx];
+            list.RemoveAt(bestIdx);
+            return nearest;
         }
-
-        if (bestIdx == -1) return null;
-
-        Transform nearest = list[bestIdx];
-        list.RemoveAt(bestIdx);
-        return nearest;
+        else
+        {
+            Transform first = list[0];
+            list.RemoveAt(0);
+            return first;
+        }
     }
-    // EnemyControllerBase.cs (agregar helpers)
     private void BeginScan()
     {
         _scanActive = true;
         _scanTimer = 0f;
         agent.isStopped = true;
-        agent.updateRotation = false;
-        _scanBaseYaw = transform.eulerAngles.y;
+        agent.updateRotation = false;  // Para que cuando llegue al LKP pueda scanear con mi codigo y no se mueva el agente solo
+        _scanBaseYaw = transform.eulerAngles.y; // Guarda la direccion donde esta mirando el agente para empezar el escaneo desde ahi
     }
 
     private bool UpdateScan()
     {
         _scanTimer += Time.deltaTime;
 
-        float angle = _scanBaseYaw + Mathf.Sin(_scanTimer * 2f * Mathf.PI * scanOscillationsPerSecond) * scanYawAmplitude;
-        transform.rotation = Quaternion.Euler(0f, angle, 0f);
+        float angle = _scanBaseYaw + Mathf.Sin(_scanTimer * 2f * Mathf.PI * scanOscillationsPerSecond) * scanYawAmplitude; // Calculo de funcion seno, que genera un angulo
+        transform.rotation = Quaternion.Euler(0f, angle, 0f);                                                              // que va de un lado al otro alrededor de scanBaseYaw
 
         if (_scanTimer >= scanDuration)
         {
             _scanActive = false;
             agent.isStopped = false;
             agent.updateRotation = true;
-            return true; // terminó
+            return true; 
         }
-        return false; // sigue
+        return false; 
     }
 
 
-    protected void FaceTowards(Vector3 targetPos)
+    protected void FaceTowards(Vector3 targetPos) // Gira al enemigo para mirar al jugador de frente
     {
         Vector3 dir = targetPos - transform.position;
         dir = new Vector3(dir.x, 0f, dir.z);
@@ -451,11 +451,9 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     {
         if (!drawGizmos) return;
 
-        // Rango de visión (desde los ojos)
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(GetEyesTransformPos(), visionRange);
 
-        // Cono de visión
         Vector3 origin = GetEyesTransformPos();
         Vector3 fwd = GetForward();
         float half = visionAngle * 0.5f;
@@ -466,7 +464,6 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         Gizmos.DrawRay(origin, left * fwd * visionRange);
         Gizmos.DrawRay(origin, right * fwd * visionRange);
 
-        // Último punto conocido
         if (_lastKnownPos != Vector3.zero)
         {
             Gizmos.color = Color.red;
@@ -474,7 +471,6 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             Gizmos.DrawWireSphere(_lastKnownPos, 5f);
         }
 
-        // 🔹 Proximidad (desde nearDetect, no desde los ojos)
         if (nearDetect != null)
         {
             Gizmos.color = Color.magenta;
