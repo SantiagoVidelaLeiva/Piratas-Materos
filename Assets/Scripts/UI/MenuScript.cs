@@ -9,8 +9,14 @@ public class MenuScript : MonoBehaviour
 {
     [SerializeField] private GameObject pause;
     private bool isPause =false;
+    [SerializeField] private MenuManager menuManager;
+    [SerializeField] private GameObject panelDeOpciones;
 
-
+    private void Start()
+    {
+        pause.SetActive(true);
+        pause.SetActive(false);
+    }
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -44,7 +50,7 @@ public class MenuScript : MonoBehaviour
     }
     public void Resume()
     {
-        pause.SetActive(false);
+        menuManager.Pause();
         Time.timeScale = 1.0f;
         isPause = false;
         Cursor.lockState = CursorLockMode.Locked; 
@@ -52,16 +58,13 @@ public class MenuScript : MonoBehaviour
     }
     public void Pause()
     {
-        pause.SetActive(true);
+        menuManager.Pause();
         Time.timeScale = 0.0f;
         isPause = true;
         Cursor.lockState = CursorLockMode.None; 
         Cursor.visible = true;
     }
-    public void Explanation()
-    {
-        SceneManager.LoadScene("Explanation");
-    }
+
     public void Die()
     {
         SceneManager.LoadScene("Lose");

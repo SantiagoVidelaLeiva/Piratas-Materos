@@ -16,6 +16,7 @@ public class MenuManager : MonoBehaviour
     public TMP_Dropdown resolucionDropdown;
 
     private Resolution[] resoluciones;
+    private bool isPaused;
 
     private void Start()
     {
@@ -103,6 +104,7 @@ public class MenuManager : MonoBehaviour
     {
         // Cambia "NombreEscenaJuego" por el nombre real de tu escena
         SceneManager.LoadScene("Mapa");
+        Time.timeScale = 1.0f;
     }
 
     public void AbrirOpciones()
@@ -121,5 +123,20 @@ public class MenuManager : MonoBehaviour
     {
         Application.Quit();
         Debug.Log("Salir del juego (en editor no se cierra).");
+    }
+
+    public void Pause()
+    {
+        if(!isPaused)
+        {
+            if (panelOpciones) panelOpciones.SetActive(true);
+            isPaused = true;
+        }
+        else
+        {
+            if (panelOpciones) panelOpciones.SetActive(false);
+            isPaused = false;
+        }
+
     }
 }
