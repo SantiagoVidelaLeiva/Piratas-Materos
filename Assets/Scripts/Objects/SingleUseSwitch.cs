@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using UnityEngine;
+using UnityEngine.Events;
 
 // Script para un interactuable de un solo uso
 public class SingleUseSwitch : MonoBehaviour, IInteractable
@@ -8,7 +9,7 @@ public class SingleUseSwitch : MonoBehaviour, IInteractable
 
     [SerializeField] private string _interactPrompt = "Press E to use";
 
-    public event System.Action OnActivated;
+    [SerializeField] private UnityEvent OnActivated;
 
     public string InteractPrompt => _interactPrompt;
 
