@@ -23,7 +23,7 @@ public class WinCondition : MonoBehaviour
             }
             else
             {
-                UnityEngine.Debug.LogError("GameManager.Instance no encontrado. Asegrese de que el GameManager est en la escena.");
+                UnityEngine.Debug.LogError("GameManager.Instance no encontrado. Asegurese de que el GameManager este en la escena.");
             }
         }
     }
