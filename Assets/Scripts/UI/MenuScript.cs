@@ -10,12 +10,15 @@ public class MenuScript : MonoBehaviour
     [SerializeField] private GameObject pause;
     private bool isPause =false;
     [SerializeField] private MenuManager menuManager;
-    [SerializeField] private GameObject panelDeOpciones;
 
     private void Start()
     {
-        pause.SetActive(true);
-        pause.SetActive(false);
+        if(pause != null)
+        {
+            pause.SetActive(true);
+            pause.SetActive(false);
+        }
+
     }
     void Update()
     {

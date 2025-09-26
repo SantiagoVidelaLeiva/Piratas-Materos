@@ -28,7 +28,7 @@ public class CameraOrbit : MonoBehaviour
     {
         if (!_target) return;
 
-        bool leftHeld = true;//Input.GetMouseButton(0);
+        bool leftHeld = true;
 
         if (leftHeld)
         {
@@ -47,8 +47,8 @@ public class CameraOrbit : MonoBehaviour
 
     public Vector3 ForwardOnPlane()
     {
-        Vector3 f = transform.forward; // �hacia adelante� de la c�mara
-        f.y = 0;                       // lo proyecto al plano XZ (quito componente vertical)
+        Vector3 f = transform.forward; 
+        f.y = 0;                       
         return f.normalized;
     }
 }

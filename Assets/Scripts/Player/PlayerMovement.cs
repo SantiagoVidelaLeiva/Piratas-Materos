@@ -23,7 +23,6 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
     [SerializeField] float _crouchSpeed = 1.2f;
     [SerializeField] float _runSpeed = 6.5f;
 
-    Vector3 _lastGroundWorld;
 
     [Header("Inputs")]
     KeyCode _runKey = KeyCode.LeftShift;
@@ -95,14 +94,11 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
         float currentSpeed = GetCurrentSpeed();
         Vector3 horiz = moveDirection * currentSpeed;
 
-        // Velocidad final (horizontal + gravedad)
         Vector3 total = horiz;
 
-        // Movimiento con Rigidbody
         _rb.MovePosition(_rb.position + total * Time.fixedDeltaTime);
         _lastHorizontalSpeed = horiz.magnitude;
 
-        // Facing
         if (_rotateToMoveDir && moveDirection.sqrMagnitude > 0.0001f)
         {
             Quaternion targetRot = Quaternion.LookRotation(moveDirection, Vector3.up);
@@ -114,9 +110,7 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
     {
         if (!_anim) return;
 
-        // Clamp limita un valor para que quede entre 0 y 1 respecto a runSpeed.
         float speed01 = Mathf.Clamp01(_lastHorizontalSpeed / _runSpeed);
-        // Suavizado para que no “salte” la mezcla
         float target = IsGrounded() ? speed01 : 0f;
         float dampTime = IsGrounded() ? 0.12f : 0f;
 
@@ -169,7 +163,6 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
 
     bool IsGrounded()
     {
-        // Simple ground check con un raycast
         return Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, 0.3f);
     }
     

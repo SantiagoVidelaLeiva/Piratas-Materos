@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class NoiseEmitter : MonoBehaviour
 {
-    [SerializeField] private Transform emitPoint;   // dónde “suena” (si está vacío, usa este transform)
+    [SerializeField] private Transform emitPoint;   // dónde “suena”
     [SerializeField] private float radius = 14f;
     [SerializeField] private float cooldown = 8f;
 
@@ -13,7 +13,6 @@ public class NoiseEmitter : MonoBehaviour
     public void EmitNoise()
     {
         if (Time.time < _readyTime) return;
-        Debug.Log("Si");
         Vector3 pos = emitPoint ? emitPoint.position : transform.position;
 
         NoiseSystem.Emit(pos, radius);
