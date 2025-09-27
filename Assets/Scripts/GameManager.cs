@@ -8,12 +8,12 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    // NUEVO: Variable para almacenar las vidas del jugador.
+    // Variable para almacenar las vidas del jugador.
     [Header("Game Settings")]
     [SerializeField] private int maxLives = 3;
     private int _currentLives;
 
-    // NUEVO: Evento para notificar a la UI cuando las vidas cambian.
+    // Evento para notificar a la UI cuando las vidas cambian.
     public event Action<int> OnLivesChanged;
 
     public int CurrentLives => _currentLives;
@@ -28,7 +28,7 @@ public class GameManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // NUEVO: Inicializamos las vidas al inicio del juego.
+        // Inicializamos las vidas al inicio del juego.
         _currentLives = maxLives;
     }
 
@@ -38,7 +38,7 @@ public class GameManager : MonoBehaviour
         // la escena se cargue para encontrar al jugador.
     }
 
-    // NUEVO: Escucha el evento de cambio de escena para encontrar al jugador.
+    // Escucha el evento de cambio de escena para encontrar al jugador.
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -51,8 +51,6 @@ public class GameManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // CAMBIO: Se eliminó el reset de vidas en el reinicio de la escena del mapa.
-        // Ahora las vidas se conservan entre reintentos. El reset se hará al iniciar una nueva partida.
 
         // Buscamos al jugador en la escena del mapa.
         if (scene.name == "Mapa")
@@ -72,7 +70,7 @@ public class GameManager : MonoBehaviour
         OnLivesChanged?.Invoke(_currentLives);
     }
 
-    // NUEVO: Este método es llamado desde el script Health cuando el jugador muere.
+    // Este método es llamado desde el script Health cuando el jugador muere.
     public void OnPlayerDied()
     {
         _currentLives--;
@@ -101,9 +99,7 @@ public class GameManager : MonoBehaviour
         Cursor.visible = true;
     }
 
-    // NUEVO: Método público para restablecer las vidas a su máximo.
-    // Esto debería ser llamado por el script del menú principal cuando el jugador
-    // inicia una nueva partida.
+    // Método público para restablecer las vidas a su máximo.
     public void ResetLives()
     {
         _currentLives = maxLives;
