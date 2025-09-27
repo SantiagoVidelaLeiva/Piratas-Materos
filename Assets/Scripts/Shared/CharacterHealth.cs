@@ -3,6 +3,8 @@ using UnityEngine;
 public class CharacterHealth : MonoBehaviour, IDamageable
 {
     [Header("Health Settings")]
+    [SerializeField] private GameObject characterCanvas;
+    [SerializeField] private CharacterHealthBar characterHealthBar;
     [SerializeField] private float maxHealth = 100;
     private float currentHealth;
 
@@ -14,12 +16,19 @@ public class CharacterHealth : MonoBehaviour, IDamageable
     void Awake()
     {
         currentHealth = maxHealth;
+        characterHealthBar.SetMaxHealth(maxHealth);
     }
 
     public void TakeDamage(float amount)
     {
+        if (!characterCanvas.activeSelf)
+        {
+            characterCanvas.SetActive(true);
+        }
+
         currentHealth -= amount;
-        Debug.Log($"{gameObject.name} recibió {amount} de daño. Vida actual: {currentHealth}");
+        characterHealthBar.SetHealth(currentHealth);
+        Debug.Log($"{gameObject.name} recibiï¿½ {amount} de daï¿½o. Vida actual: {currentHealth}");
 
         if (currentHealth <= 0)
         {
@@ -30,12 +39,18 @@ public class CharacterHealth : MonoBehaviour, IDamageable
     public void Heal(float amount)
     {
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+        characterHealthBar.SetHealth(currentHealth);
         Debug.Log($"{gameObject.name} curado. Vida actual: {currentHealth}");
     }
 
     private void Die()
     {
-        Debug.Log($"{gameObject.name} murió.");
+        if (characterCanvas.activeSelf)
+        {
+            characterCanvas.SetActive(false);
+        }
+
+        Debug.Log($"{gameObject.name} muriï¿½.");
 
         OnDied?.Invoke();
 
