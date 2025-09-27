@@ -39,6 +39,7 @@ public class CharacterHealth : MonoBehaviour, IDamageable
     public void Heal(float amount)
     {
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+        characterHealthBar.SetHealth(currentHealth);
         Debug.Log($"{gameObject.name} curado. Vida actual: {currentHealth}");
     }
 

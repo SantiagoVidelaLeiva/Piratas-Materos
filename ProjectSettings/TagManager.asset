@@ -5,7 +5,6 @@ TagManager:
   serializedVersion: 3
   tags:
   - Ground
-  - HitColl
   - Enemy
   layers:
   - Default
