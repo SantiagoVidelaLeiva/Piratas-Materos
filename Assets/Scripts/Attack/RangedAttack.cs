@@ -36,7 +36,17 @@ public class RangedAttack : AttackBase
 
         Debug.DrawRay(origin, dir * maxRange, Color.red, 0.05f);
     }
+    public override bool CanAttack(Transform target, Vector3 seenPos)
+    {
+        if (Time.time < _nextAttackTime) return false;
+        Vector3 origin = firePoint ? firePoint.position : transform.position + Vector3.up * 1.5f;
+        Vector3 dir = (seenPos - origin).normalized;
 
+        if (Physics.Raycast(origin, dir, out var hit, maxRange, hitMask, QueryTriggerInteraction.Ignore))
+            return hit.collider.transform.root == target.root;
+
+        return false;
+    }
     private System.Collections.IEnumerator FlashBeam(Vector3 a, Vector3 b)
     {
         var beam = Instantiate(beamPrefab, a, Quaternion.identity);
