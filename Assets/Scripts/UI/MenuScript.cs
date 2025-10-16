@@ -47,9 +47,9 @@ public class MenuScript : MonoBehaviour
     }
     public void BackMenu()
     {
-        SceneManager.LoadScene("Menu");
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        SceneManager.LoadScene("Menu");
     }
     public void Resume()
     {
@@ -70,9 +70,10 @@ public class MenuScript : MonoBehaviour
 
     public void Die()
     {
-        SceneManager.LoadScene("Lose");
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        SceneManager.LoadScene("Lose");
+
     }
 
 

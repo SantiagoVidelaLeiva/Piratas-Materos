@@ -26,7 +26,7 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
 
     [Header("Inputs")]
     KeyCode _runKey = KeyCode.LeftShift;
-    KeyCode _attackInput = KeyCode.Mouse0;
+    KeyCode _attackInput = KeyCode.X;
 
     [Header("Agacharse")]
     KeyCode _crouchKey = KeyCode.LeftControl;
@@ -166,7 +166,7 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
         return Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, 0.3f);
     }
     
-        void Attack()
+    void Attack()
     {
         if (Input.GetKeyDown(_attackInput))
         {

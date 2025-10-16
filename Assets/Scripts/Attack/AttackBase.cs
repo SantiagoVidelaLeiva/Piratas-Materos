@@ -10,10 +10,10 @@ public abstract class AttackBase : MonoBehaviour, IAttackStrategy
     [SerializeField] protected LayerMask hitMask = ~0;  // capas válidas para raycast (si aplica)
     public virtual float StopDistance => maxRange; // StopDistance siempre devuelve el mismo valor que maxRange
 
-    private float _nextAttackTime;
+    protected float _nextAttackTime;
 
 
-    public bool CanAttack(Transform target, Vector3 seenPos)
+    public virtual bool CanAttack(Transform target, Vector3 seenPos)
     {
         return Time.time >= _nextAttackTime && IsInRange(seenPos);
     }
