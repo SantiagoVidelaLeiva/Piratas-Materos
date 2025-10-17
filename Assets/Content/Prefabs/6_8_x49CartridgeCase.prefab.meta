@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 3c0e71b035d7f914f8fab126a1476ada
+timeCreated: 1516730417
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 111003
+  packageName: Compact Bullpup Assault Rifle
+  packageVersion: 1.0
+  assetPath: Assets/Content/Prefabs/6_8_x49CartridgeCase.prefab
+  uploadId: 231976

@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 4dedb3a1c43f88944b7a0570e5fd719a
+timeCreated: 1516706852
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 111003
+  packageName: Compact Bullpup Assault Rifle
+  packageVersion: 1.0
+  assetPath: Assets/Content/Materials/MagLOD1.mat
+  uploadId: 231976

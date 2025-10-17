@@ -7,11 +7,14 @@ public abstract class AttackBase : MonoBehaviour, IAttackStrategy
     [SerializeField] protected float cooldown = 0.5f;
     [SerializeField] protected float maxRange = 8f;
     [SerializeField] protected Transform firePoint;     // origen del ataque (mano/arma)
-    [SerializeField] protected LayerMask hitMask = ~0;  // capas válidas para raycast (si aplica)
+    [SerializeField] protected LayerMask hitMask;  // capas válidas para raycast (si aplica)
     public virtual float StopDistance => maxRange; // StopDistance siempre devuelve el mismo valor que maxRange
 
     protected float _nextAttackTime;
-
+    protected virtual void Awake()
+    {
+        hitMask = LayerMask.GetMask("Player");
+    }
 
     public virtual bool CanAttack(Transform target, Vector3 seenPos)
     {
