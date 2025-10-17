@@ -7,7 +7,8 @@ public class CharacterHealth : MonoBehaviour, IDamageable
     [SerializeField] private CharacterHealthBar characterHealthBar;
     [SerializeField] private float maxHealth = 100;
     private float currentHealth;
-
+    private bool isDead = false;
+    public bool IsDead => isDead;
     public float CurrentHealth => currentHealth;
     public float MaxHealth => maxHealth;
 
@@ -21,6 +22,8 @@ public class CharacterHealth : MonoBehaviour, IDamageable
 
     public void TakeDamage(float amount)
     {
+        if (isDead) return;
+
         if (!characterCanvas.activeSelf)
         {
             characterCanvas.SetActive(true);
@@ -45,15 +48,15 @@ public class CharacterHealth : MonoBehaviour, IDamageable
 
     private void Die()
     {
-        if (characterCanvas.activeSelf)
-        {
-            characterCanvas.SetActive(false);
-        }
+        if (isDead) return; 
+        isDead = true;
 
-        Debug.Log($"{gameObject.name} muri�.");
+        if (characterCanvas.activeSelf)
+            characterCanvas.SetActive(false);
+
+        Debug.Log($"{gameObject.name} murió.");
 
         OnDied?.Invoke();
 
-        Destroy(gameObject);
     }
 }

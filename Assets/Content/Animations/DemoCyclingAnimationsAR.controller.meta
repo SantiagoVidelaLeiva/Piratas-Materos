@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 39d10867a3dfc534690082a882344768
+timeCreated: 1519487094
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 111003
+  packageName: Compact Bullpup Assault Rifle
+  packageVersion: 1.0
+  assetPath: Assets/Content/Animations/DemoCyclingAnimationsAR.controller
+  uploadId: 231976

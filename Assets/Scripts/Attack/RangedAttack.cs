@@ -41,8 +41,8 @@ public class RangedAttack : AttackBase
         if (Time.time < _nextAttackTime) return false;
         Vector3 origin = firePoint ? firePoint.position : transform.position + Vector3.up * 1.5f;
         Vector3 dir = (seenPos - origin).normalized;
-
-        if (Physics.Raycast(origin, dir, out var hit, maxRange, hitMask, QueryTriggerInteraction.Ignore))
+        float maxDist = Mathf.Min(maxRange, Vector3.Distance(origin, seenPos) + 0.2f);
+        if (Physics.Raycast(origin, dir, out var hit, maxDist, hitMask, QueryTriggerInteraction.Ignore))
             return hit.collider.transform.root == target.root;
 
         return false;

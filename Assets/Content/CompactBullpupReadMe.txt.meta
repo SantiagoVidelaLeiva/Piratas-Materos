@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c2d816dd5095b9942b0502df2d1974ea
+timeCreated: 1519656506
+licenseType: Store
+TextScriptImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 111003
+  packageName: Compact Bullpup Assault Rifle
+  packageVersion: 1.0
+  assetPath: Assets/Content/CompactBullpupReadMe.txt
+  uploadId: 231976
