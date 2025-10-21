@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 727be3666d781524d9961650bcb89bff
+timeCreated: 1516710594
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 111003
+  packageName: Compact Bullpup Assault Rifle
+  packageVersion: 1.0
+  assetPath: Assets/Content/Materials/_6_8x49CartridgeLOD1.mat
+  uploadId: 231976

@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 345964ae711018b4482bcdd80317b937
+timeCreated: 1516721737
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 111003
+  packageName: Compact Bullpup Assault Rifle
+  packageVersion: 1.0
+  assetPath: Assets/Content/Materials/IronSightsLOD1.mat
+  uploadId: 231976

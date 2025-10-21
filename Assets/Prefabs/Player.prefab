@@ -169,6 +169,8 @@ GameObject:
   m_Component:
   - component: {fileID: 5230777923933570407}
   - component: {fileID: 1876012152236777785}
+  - component: {fileID: 5382957689144340516}
+  - component: {fileID: 5588068318014708575}
   m_Layer: 3
   m_Name: Model
   m_TagString: Untagged
@@ -203,7 +205,7 @@ Animator:
   m_GameObject: {fileID: 741089712163800096}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 018e1cb781e9d4a40b6289bfb84d7144, type: 3}
-  m_Controller: {fileID: 9100000, guid: 7479f0c47dc7aff48aa95aa876ee86c9, type: 2}
+  m_Controller: {fileID: 9100000, guid: 0071079f6a9b7c54d9c85fcc90df22fd, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -215,6 +217,39 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5382957689144340516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 741089712163800096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b7fd6045140e934f820fb1e116c4c66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!135 &5588068318014708575
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 741089712163800096}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 1.2, z: 0.4}
 --- !u!1 &814443443616967095
 GameObject:
   m_ObjectHideFlags: 0
@@ -2331,7 +2366,7 @@ MonoBehaviour:
   _visual: {fileID: 0}
   _visualYOffset: -0.04
   _walkSpeed: 4.5
-  _crouchSpeed: 1.2
+  _crouchSpeed: 2.5
   _runSpeed: 6.5
   _standingHeight: 1.8
   _crouchingHeight: 1.2
@@ -2348,7 +2383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 651f4e6f2bec17341afe56339213efde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
+  maxHealth: 1000000
 --- !u!54 &6648632390126438386
 Rigidbody:
   m_ObjectHideFlags: 0
