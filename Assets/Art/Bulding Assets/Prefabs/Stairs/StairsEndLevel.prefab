@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2000841301118944583}
   - component: {fileID: 3552811038749608375}
   - component: {fileID: 6226603557930302277}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Stairs_2m_A_Wall_Trim_Flipped
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -121,7 +121,7 @@ GameObject:
   - component: {fileID: 7461346827936170083}
   - component: {fileID: 5661656530928520251}
   - component: {fileID: 4175747098742536217}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Stairs_2m_E_Stair
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -232,7 +232,7 @@ GameObject:
   - component: {fileID: 1365545520167249809}
   - component: {fileID: 7631693369411912511}
   - component: {fileID: 6294251833636275364}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Stairs_2m_A_Wall_Flipped
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -339,7 +339,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2627102555374084867}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: StairsEndLevel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -383,7 +383,7 @@ GameObject:
   - component: {fileID: 8539126627285984876}
   - component: {fileID: 7557563114265061358}
   - component: {fileID: 2824122946279672023}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Stairs_2m_A_Stair_Flipped
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -494,7 +494,7 @@ GameObject:
   - component: {fileID: 6407086316347520566}
   - component: {fileID: 615398959997047288}
   - component: {fileID: 8753456938859054826}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Stairs_2m_A_Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -601,7 +601,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7159812926161749486}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Stairs_2m_A_Grp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -632,7 +632,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1642021141660148808}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Stairs_2m_E_Grp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -666,7 +666,7 @@ GameObject:
   - component: {fileID: 8340140156183581556}
   - component: {fileID: 4752177359430090349}
   - component: {fileID: 6362777081142532293}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Stairs_2m_A_Stair
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -777,7 +777,7 @@ GameObject:
   - component: {fileID: 3534007628418381950}
   - component: {fileID: 1517904553999074625}
   - component: {fileID: 4285575904827921805}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Stairs_2m_A_Floor_Flipped
   m_TagString: Untagged
   m_Icon: {fileID: 0}

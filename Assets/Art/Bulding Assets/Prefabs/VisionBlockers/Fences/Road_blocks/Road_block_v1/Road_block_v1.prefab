@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 33000012083304968}
   - component: {fileID: 23000010166301650}
   - component: {fileID: 4011539381181172701}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Road_block_v1
   m_TagString: Untagged
   m_Icon: {fileID: 0}

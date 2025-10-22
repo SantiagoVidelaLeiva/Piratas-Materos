@@ -5,6 +5,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8278989838447612583, guid: 615251885f1a6ab458e28dd5d6c6da64, type: 3}
@@ -17,7 +18,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 211260291240662588, guid: 615251885f1a6ab458e28dd5d6c6da64, type: 3}
       propertyPath: m_Name
-      value: Simple Office Chair Variant
+      value: simple_office_chair_variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 211260291240662588, guid: 615251885f1a6ab458e28dd5d6c6da64, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1407783625795715233, guid: 615251885f1a6ab458e28dd5d6c6da64, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2568134490360551039, guid: 615251885f1a6ab458e28dd5d6c6da64, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4461560833504151566, guid: 615251885f1a6ab458e28dd5d6c6da64, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 5238603828994086098, guid: 615251885f1a6ab458e28dd5d6c6da64, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 6123601781722119229, guid: 615251885f1a6ab458e28dd5d6c6da64, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7009154847636081869, guid: 615251885f1a6ab458e28dd5d6c6da64, type: 3}
       propertyPath: m_RootOrder
@@ -68,8 +93,15 @@ PrefabInstance:
       value: 
       objectReference: {fileID: -1944279475796376223, guid: f1cd6800d51724d4291ee22764292e86, type: 3}
     - target: {fileID: 8845804639811968061, guid: 615251885f1a6ab458e28dd5d6c6da64, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: fd3f28898aa4320409895499ca6515fe, type: 2}
+    - target: {fileID: 9163441733416004303, guid: 615251885f1a6ab458e28dd5d6c6da64, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 615251885f1a6ab458e28dd5d6c6da64, type: 3}

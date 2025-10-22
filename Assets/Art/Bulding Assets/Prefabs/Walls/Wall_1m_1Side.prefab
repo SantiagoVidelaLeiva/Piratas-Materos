@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5277845334734337892}
   - component: {fileID: 988152051676520229}
   - component: {fileID: 297404903974944280}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Wall_1m_1Side
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -59,6 +59,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:

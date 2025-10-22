@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 300935786347986602}
   - component: {fileID: 5351932722169466342}
   - component: {fileID: 1400426603808153722}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Wall_Edge_3m
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -59,6 +59,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
