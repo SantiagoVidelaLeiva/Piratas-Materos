@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7187785712017031566}
   - component: {fileID: 6143085711950749054}
   - component: {fileID: 3967938203050552984}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Marble
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -103,7 +103,7 @@ GameObject:
   - component: {fileID: 6013842364282502758}
   - component: {fileID: 7626157730491101095}
   - component: {fileID: 515379404639077274}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sanitary_007
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -189,7 +189,7 @@ GameObject:
   - component: {fileID: 5856069853816802052}
   - component: {fileID: 5321207805122590697}
   - component: {fileID: 4532880290297228713}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sanitary_006
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -275,7 +275,7 @@ GameObject:
   - component: {fileID: 3434847856793391086}
   - component: {fileID: 985580419603062991}
   - component: {fileID: 1109737419354844080}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sanitary
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -361,7 +361,7 @@ GameObject:
   - component: {fileID: 3179540103658670072}
   - component: {fileID: 1865093697372573307}
   - component: {fileID: 6560998586769605933}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sanitary_001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -447,7 +447,7 @@ GameObject:
   - component: {fileID: 1957737008776357033}
   - component: {fileID: 7437267492644728289}
   - component: {fileID: 1690829416282231630}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sanitary_005
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -533,7 +533,7 @@ GameObject:
   - component: {fileID: 8897434426760592471}
   - component: {fileID: 1271942921913218345}
   - component: {fileID: 1778723935356984184}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sanitary_004
   m_TagString: Untagged
   m_Icon: {fileID: 0}

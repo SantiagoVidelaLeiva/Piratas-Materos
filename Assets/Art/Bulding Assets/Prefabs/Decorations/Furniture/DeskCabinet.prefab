@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1095196479460777735}
   - component: {fileID: 4540539592336299519}
   - component: {fileID: 5313373864373856247}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: DeskCabinet
   m_TagString: Untagged
   m_Icon: {fileID: 0}

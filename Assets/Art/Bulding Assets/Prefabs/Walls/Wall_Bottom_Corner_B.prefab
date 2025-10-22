@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1103781758160403016}
   - component: {fileID: 2435641422232890720}
   - component: {fileID: 640359313387736713}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Wall_Bottom_Corner_B
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -59,6 +59,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 272819929276967197}
   - component: {fileID: 4103760485550017375}
   - component: {fileID: 5008506033450300968}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: desk_1_alternative
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -122,7 +122,7 @@ GameObject:
   - component: {fileID: 8606960310773756748}
   - component: {fileID: 3788517267975359465}
   - component: {fileID: 7948793671850885169}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Dec
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -208,7 +208,7 @@ GameObject:
   - component: {fileID: 1753262975209244385}
   - component: {fileID: 7888303022497171698}
   - component: {fileID: 6216570259476001293}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Door
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -294,7 +294,7 @@ GameObject:
   - component: {fileID: 4693555275586828644}
   - component: {fileID: 4693555275586828642}
   - component: {fileID: 4693555275586828645}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Door
   m_TagString: Untagged
   m_Icon: {fileID: 0}
