@@ -3875,10 +3875,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _doorObject: {fileID: 213980482}
-  _openPosition: {x: -25.54688, y: 5.97, z: 18.89868}
+  _movementType: 0
   _openSpeed: 1
-  _closedPosition: {x: 0, y: 0, z: 0}
   _interactPrompt: Press E to Open
+  _openTranslationOffset: {x: 0, y: 0, z: 0}
+  _openEulerRotation: {x: 0, y: 0, z: 0}
 --- !u!1001 &215328714
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14899,10 +14900,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _doorObject: {fileID: 706606014}
-  _openPosition: {x: 0.8427734, y: 5.47, z: -21.20825}
+  _movementType: 0
   _openSpeed: 1
-  _closedPosition: {x: 0, y: 0, z: 0}
   _interactPrompt: E to Hack
+  _openTranslationOffset: {x: 0, y: 0, z: 0}
+  _openEulerRotation: {x: 0, y: 0, z: 0}
 --- !u!1 &710193134
 GameObject:
   m_ObjectHideFlags: 0
@@ -20720,10 +20722,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _doorObject: {fileID: 872827165}
-  _openPosition: {x: -12.12207, y: 6.24, z: 18.89185}
+  _movementType: 0
   _openSpeed: 1
-  _closedPosition: {x: 0, y: 0, z: 0}
   _interactPrompt: Press E to open
+  _openTranslationOffset: {x: 0, y: 0, z: 0}
+  _openEulerRotation: {x: 0, y: 0, z: 0}
 --- !u!65 &872827162
 BoxCollider:
   m_ObjectHideFlags: 0
