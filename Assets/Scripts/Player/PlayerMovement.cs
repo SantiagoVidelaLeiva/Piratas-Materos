@@ -71,6 +71,11 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
         Run();
         Attack();
         UpdateAnim();
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
     }
 
     void FixedUpdate()
@@ -173,4 +178,5 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
             _anim.SetTrigger("Attack");
         }
     }
+
 }

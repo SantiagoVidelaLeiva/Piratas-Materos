@@ -4,8 +4,8 @@ public class RangedAttack : AttackBase
 {
     [Header("Mid-Ranged")]
     [SerializeField] private float spreadDegrees = 2.5f;
-    [SerializeField] private LineRenderer beamPrefab; // opcional, para “flash”
-    [SerializeField] private float beamLife = 0.1f;  // dura 1–2 frames
+    [SerializeField] private LineRenderer beamPrefab; 
+    [SerializeField] private float beamLife = 0.1f;  
     private void Awake()
     {
         beamPrefab = GameObject.Find("RedLineRender").GetComponent<LineRenderer>();

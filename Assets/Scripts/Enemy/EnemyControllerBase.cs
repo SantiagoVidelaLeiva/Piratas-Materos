@@ -79,6 +79,8 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     int upperBodyLayerIdx;
     Quaternion _pivotBaseLocalRot;
     EnemyAnimator _enemyAnimator;
+    CharacterHealth _enemyHealth;
+
     // ============================
     //      Unity Lifecycle
     // ============================
@@ -122,6 +124,17 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         //_enemyAnimator.SetState(AnimState.Idle);
         //upperBodyLayerIdx = animator.GetLayerIndex("UpperBody");
         SetState(EnemyState.Patrolling);
+    }
+    void OnEnable()
+    {
+        if (_enemyHealth != null)
+            _enemyHealth.OnDied += HandleDeath;
+    }
+
+    void OnDisable()
+    {
+        if (_enemyHealth != null)
+            _enemyHealth.OnDied -= HandleDeath;
     }
 
     private void OnDestroy()
@@ -198,7 +211,9 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     //}
     private void HandleDeath()
     {
-        //animator.SetBool("IsDead", true);
+        enabled = false;
+        if (agent && agent.isActiveAndEnabled)
+            agent.enabled = false;
     }
     // ============================
     //        State Machine
