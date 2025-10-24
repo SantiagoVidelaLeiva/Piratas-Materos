@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 80ad2d586cda05a489d80de4be62cbca
+timeCreated: 1519487535
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 111003
+  packageName: Compact Bullpup Assault Rifle
+  packageVersion: 1.0
+  assetPath: Assets/Content/Meshes/Materials/pasted__phong8.mat
+  uploadId: 231976

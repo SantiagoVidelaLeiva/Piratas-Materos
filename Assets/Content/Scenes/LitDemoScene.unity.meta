@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 57cb31fa86ed77d4ab1c4f3fa09bc517
+timeCreated: 1519494759
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 111003
+  packageName: Compact Bullpup Assault Rifle
+  packageVersion: 1.0
+  assetPath: Assets/Content/Scenes/LitDemoScene.unity
+  uploadId: 231976

@@ -11,10 +11,10 @@ public class DoorActivator : MonoBehaviour
 
     [Header("Configuracion de la Puerta")]
     [SerializeField] private Transform _doorObject;
-    [SerializeField] private Vector3 _openPosition;
-    [SerializeField] private float _openSpeed = 1f;
+    [SerializeField] private Vector3 _openEulerRotation;
+    [SerializeField] private float _openSpeed = 50f;
 
-    private Vector3 _startPosition;
+    private Quaternion _startRotation;
     private bool _isOpening = false;
 
     // Un contador de activaciones que es de instancia.
@@ -29,7 +29,7 @@ public class DoorActivator : MonoBehaviour
             return;
         }
 
-        _startPosition = _doorObject.localPosition;
+        _startRotation = _doorObject.localRotation;
 
         //  Eliminamos la suscripción en cdigo.
         // La conexin ahora se har en el Inspector.
@@ -43,8 +43,11 @@ public class DoorActivator : MonoBehaviour
     {
         if (_isOpening)
         {
-            _doorObject.localPosition = Vector3.MoveTowards(_doorObject.localPosition, _openPosition, _openSpeed * Time.deltaTime);
-            if (_doorObject.localPosition == _openPosition)
+            Quaternion targetRotation = Quaternion.Euler(_openEulerRotation);
+
+            _doorObject.localRotation = Quaternion.RotateTowards(_doorObject.localRotation, targetRotation, _openSpeed * Time.deltaTime);
+            
+            if (_doorObject.localRotation == targetRotation)
             {
                 _isOpening = false;
             }
@@ -81,6 +84,6 @@ public class DoorActivator : MonoBehaviour
     {
         _activatedSwitchesCount = 0;
         _isOpening = false;
-        _doorObject.localPosition = _startPosition;
+        _doorObject.localRotation = _startRotation;
     }
 }
