@@ -100,10 +100,11 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
         Vector3 horiz = moveDirection * currentSpeed;
 
         Vector3 total = horiz;
-
+        //bool aiming = Input.GetMouseButton(1);
+        //if (aiming) _rotateToMoveDir = false;
+        //else _rotateToMoveDir = true;
         _rb.MovePosition(_rb.position + total * Time.fixedDeltaTime);
         _lastHorizontalSpeed = horiz.magnitude;
-
         if (_rotateToMoveDir && moveDirection.sqrMagnitude > 0.0001f)
         {
             Quaternion targetRot = Quaternion.LookRotation(moveDirection, Vector3.up);
