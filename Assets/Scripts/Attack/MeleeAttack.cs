@@ -7,8 +7,9 @@ public class MeleeAttack : AttackBase
     [SerializeField] private LineRenderer beamPrefab; 
     [SerializeField] private float beamLife = 0.1f;  
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         beamPrefab = GameObject.Find("BlueLineRender").GetComponent<LineRenderer>();
         firePoint = transform.Find("Eyes");
     }

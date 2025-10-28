@@ -36,6 +36,7 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
 
     [Header("Scripts")]
     [SerializeField] PlayerGravity _playerGravity;
+    bool _wasAiming;
 
     public float GetEyeHeight() => IsCrouching ? _crouchingHeight : _standingHeight;
 
@@ -100,16 +101,22 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
         Vector3 horiz = moveDirection * currentSpeed;
 
         Vector3 total = horiz;
-        //bool aiming = Input.GetMouseButton(1);
-        //if (aiming) _rotateToMoveDir = false;
-        //else _rotateToMoveDir = true;
+        bool aiming =  Input.GetMouseButton(1);
+
+        if (aiming && !_wasAiming)
+        {
+            Vector3 f = camForward; // ya es forward plano de la cámara
+            if (f.sqrMagnitude > 0.0001f)
+                transform.rotation = Quaternion.LookRotation(f, Vector3.up);
+        }
         _rb.MovePosition(_rb.position + total * Time.fixedDeltaTime);
         _lastHorizontalSpeed = horiz.magnitude;
-        if (_rotateToMoveDir && moveDirection.sqrMagnitude > 0.0001f)
+        if (_rotateToMoveDir && !aiming && moveDirection.sqrMagnitude > 0.0001f)
         {
             Quaternion targetRot = Quaternion.LookRotation(moveDirection, Vector3.up);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, _faceLerp * Time.fixedDeltaTime);
         }
+        _wasAiming = aiming;
     }
 
     void UpdateAnim()

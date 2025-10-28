@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -65,8 +66,6 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     public event Action OnEnemyDestroyed;
     public event Action<float> OnSpeed01Changed;
     public event Action<AnimState> OnAnimState;
-    public event Action OnScanBegin;
-    public event Action OnScanEnd;
     public event Action<int> OnAnimTrigger;
     public event Action<int,bool> OnAnimBool;
     protected Vector3 _lastKnownPos;
@@ -112,6 +111,9 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             visionPivot = transform.Find("VisionPivot");
         if (visionPivot) _pivotBaseLocalRot = visionPivot.localRotation;
         _iattackStrategy = GetComponent<IAttackStrategy>();
+        if(!_enemyHealth)
+            _enemyHealth = GetComponent<CharacterHealth>();
+        _enemyHealth.OnDamaged += HandleDamaged_EnterDanger;
 
         NoiseSystem.OnNoise += OnNoiseHeard;
         health = GetComponent<CharacterHealth>();
@@ -128,10 +130,8 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             RaiseAnimState(AnimState.Idle);
 
     }
-    void Start()
+    protected virtual void Start()
     {
-        //_enemyAnimator.SetState(AnimState.Idle);
-        //upperBodyLayerIdx = animator.GetLayerIndex("UpperBody");
         SetState(EnemyState.Patrolling);
     }
     void OnEnable()
@@ -152,6 +152,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         OnEnemyDestroyed?.Invoke();
         if (health != null)
             health.OnDied -= HandleDeath;
+        health.OnDamaged -= HandleDamaged_EnterDanger;
     }
 
     private void OnNoiseHeard(Vector3 pos, float radius)
@@ -166,12 +167,6 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     private void Update()
     {
         bool seesPlayer = TrySeePlayer(out Vector3 seenPos);// Si veo al jugador, consigo su posicion de la cabeza y el bool verdadero
-
-        //if (!seesPlayer && TryNearDetectPlayer(out Vector3 sensedPos)) // Si no lo veo, pero lo veo con la esfera del "olfato"
-        //{
-        //    seesPlayer = true;
-        //    seenPos = sensedPos;
-        //}
 
         switch (_state)
         {
@@ -188,9 +183,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
                 TickDanger(seesPlayer, seenPos);
                 break;
         }
-        //bool dead = (health != null) && health.IsDead;
-        //UpdateAnimator(agent.velocity,_isScaning, dead);
-        //UpdateUpperBodyWeight();
+;
         float raw = new Vector3(agent.velocity.x, 0f, agent.velocity.z).magnitude; // m/s
         float norm = Mathf.InverseLerp(0f, chaseSpeed, raw); // 0..1 usando tu chaseSpeed como tope
         _smoothNorm = Mathf.Lerp(_smoothNorm, norm, Time.deltaTime * 5f);
@@ -612,6 +605,20 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
 
     protected virtual void RaiseTrigger(int hash) => OnAnimTrigger?.Invoke(hash);
     protected virtual void RaiseBool(int paramHash, bool value) => OnAnimBool?.Invoke(paramHash,value);
+
+    private void HandleDamaged_EnterDanger()
+    {
+        if ( _enemyHealth == null || _enemyHealth.IsDead) return;
+        StopCoroutine(nameof(DelayedEnterDanger)); // por si llega otro daño antes
+        StartCoroutine(DelayedEnterDanger());
+    }
+    private IEnumerator DelayedEnterDanger()
+    {
+        if (_enemyHealth == null || _enemyHealth.IsDead) yield break;
+        yield return new WaitForSeconds(0.3f);
+        _lastKnownPos = player.position;
+        SetState(EnemyState.Danger);
+    }
     // ============================
     //           Gizmos
     // ============================

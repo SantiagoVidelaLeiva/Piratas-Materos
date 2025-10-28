@@ -18,18 +18,20 @@ public class PistolAttack : MonoBehaviour
     [SerializeField] LayerMask aimMask = ~0;
 
     [Header("Weapon")]
-    [SerializeField] float damage = 100f;
+    float damage = 50f;
     [SerializeField] float maxRange = 100f;
     [SerializeField] float nearWallDistance = 1.0f;
+    [Header("Fire")]
+    [SerializeField] float fireRate = 2f;
+    float _nextFireTime = 0f;
 
     [Header("FX")]
     [SerializeField] ParticleSystem muzzleFlash;
     [SerializeField] GameObject impactPrefab;
     [SerializeField] float impactLife = 3f;
-    [SerializeField] LineRenderer beamPrefab;
-    [SerializeField] float beamLife = 0.08f;
-    [SerializeField] GameObject shootVfxPrefab;
-    [SerializeField] float shootVfxLife = 2f;
+    [Header("Audio")]
+    [SerializeField] AudioSource audioSource;
+    [SerializeField] AudioClip shootClip;
 
     // último punto de mira (lo que ve la cámara en el centro)
     public Vector3 LastAimPoint { get; private set; }
@@ -43,8 +45,18 @@ public class PistolAttack : MonoBehaviour
         // asegurá que no te pegues al Player
         int player = LayerMask.NameToLayer("Player");
         if (player >= 0) aimMask &= ~(1 << player);
+        if(!audioSource) audioSource = GetComponent<AudioSource>();
     }
-
+    private void Start()
+    {
+        if (!muzzle)
+        {
+            muzzle = System.Array.Find(
+                transform.GetComponentsInChildren<Transform>(true),
+                t => t.name == "FirePoint"
+            );
+        }
+    }
     void Update()
     {
         if (!camOrbit || !muzzle) return;
@@ -88,13 +100,11 @@ public class PistolAttack : MonoBehaviour
     void Shoot(Ray camRay, Vector3 aimPoint)
     {
         // FX en muzzle
+        if (Time.time < _nextFireTime) return;
+        _nextFireTime = Time.time + 1f / fireRate;
         if (muzzleFlash) StartCoroutine(FlashOnce(muzzleFlash, 0.05f));
-        if (shootVfxPrefab)
-        {
-            var vfx = Instantiate(shootVfxPrefab, muzzle.position, muzzle.rotation);
-            var ps = vfx.GetComponent<ParticleSystem>();
-            Destroy(vfx, ps ? ps.main.duration + ps.main.startLifetime.constantMax + 0.1f : shootVfxLife);
-        }
+        if (audioSource && shootClip)
+            audioSource.PlayOneShot(shootClip);
 
         // Dirección desde el muzzle hacia el aimPoint (centro de pantalla)
         Vector3 toAim = aimPoint - muzzle.position;
@@ -116,25 +126,41 @@ public class PistolAttack : MonoBehaviour
         // Tiro definitivo desde el muzzle
         if (Physics.Raycast(muzzle.position, dirFromMuzzle, out RaycastHit finalHit, maxRange, aimMask, QueryTriggerInteraction.Ignore))
             ApplyHit(finalHit, muzzle.position);
-        else if (beamPrefab)
-            StartCoroutine(FlashBeam(muzzle.position, muzzle.position + dirFromMuzzle * maxRange));
+
     }
 
     void ApplyHit(RaycastHit hit, Vector3 from)
     {
         if (impactPrefab)
-            Destroy(Instantiate(impactPrefab, hit.point, Quaternion.LookRotation(hit.normal)), impactLife);
+        {
+            // buscar si el collider pertenece a un enemigo
+            bool hitEnemy = hit.collider.GetComponentInParent<CharacterHealth>() != null;
 
-        if (beamPrefab) StartCoroutine(FlashBeam(from, hit.point));
+            if (!hitEnemy)
+            {
+                var rot = Quaternion.LookRotation(hit.normal);
+                var fx = Instantiate(impactPrefab, hit.point, rot);
+                Destroy(fx, impactLife);
+            }
+        }
 
-        if (hit.collider.TryGetComponent(out CharacterHealth health))
-            health.TakeDamage(damage);
+
+        Vector3 dir = (hit.point - from).normalized;
+        float impulsePower = damage * 0.1f;  // ajustá a gusto
+        Vector3 force = dir * impulsePower;
+
+        Rigidbody hitRB = hit.rigidbody ? hit.rigidbody : hit.collider.attachedRigidbody;
+        if (!hitRB) hitRB = hit.collider.GetComponentInParent<Rigidbody>();
+        float appliedDamage = hit.collider.CompareTag("Head") ? 100f : damage;
+        Debug.Log($"Hit: {hit.collider.name}, Tag: {hit.collider.tag}, Point: {hit.point}");
+        Debug.DrawLine(from, hit.point, Color.red, 2f);
+        var health = hit.collider.GetComponentInParent<CharacterHealth>();
+        if (health != null)
+            health.TakeDamage1(appliedDamage, hit.point, force, hitRB);
         else
             hit.collider.SendMessageUpwards("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
-
-        if (hit.rigidbody)
-            hit.rigidbody.AddForceAtPosition((hit.point - from).normalized * damage, hit.point, ForceMode.Impulse);
     }
+
 
     System.Collections.IEnumerator FlashOnce(ParticleSystem prefab, float dur)
     {
@@ -144,14 +170,5 @@ public class PistolAttack : MonoBehaviour
         Destroy(ps.gameObject);
     }
 
-    System.Collections.IEnumerator FlashBeam(Vector3 a, Vector3 b)
-    {
-        var beam = Instantiate(beamPrefab);
-        beam.positionCount = 2;
-        beam.SetPosition(0, a);
-        beam.SetPosition(1, b);
-        yield return null;
-        yield return new WaitForSeconds(beamLife);
-        Destroy(beam.gameObject);
-    }
+
 }

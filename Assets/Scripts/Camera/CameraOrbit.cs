@@ -36,6 +36,9 @@ public class CameraOrbit : MonoBehaviour
     float _aimT;
     Rigidbody _playerRb;
     GameObject _spawnedWeapon;
+    [SerializeField] Vector2 _aimLockLocalXZ = new Vector2(-0.024f, 0.0361f);
+    [SerializeField] float _lockSnap = 50f;
+    [SerializeField] GameObject _crosshair;
 
     void Awake()
     {
@@ -63,7 +66,8 @@ public class CameraOrbit : MonoBehaviour
         _pitch = Mathf.Clamp(_pitch, _yMin, _yMax);
 
         _aimT = Mathf.MoveTowards(_aimT, aiming ? 1f : 0f, _aimLerp * Time.deltaTime);
-
+        if (_crosshair)
+            _crosshair.SetActive(_aimT > 0.15f);
         Quaternion rot = Quaternion.Euler(_pitch, _yaw, 0f);
         Vector3 focus = _target.position + _targetOffset;
 
@@ -119,6 +123,7 @@ public class CameraOrbit : MonoBehaviour
             Destroy(_spawnedWeapon);
             _spawnedWeapon = null;
         }
+
     }
 
     public Vector3 ForwardOnPlane()

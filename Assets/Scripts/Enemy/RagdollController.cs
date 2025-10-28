@@ -17,6 +17,7 @@ public class RagdollController : MonoBehaviour
     private CharacterHealth _enemyHealth;
     bool _isRagdoll = false;
 
+
     void Awake()
     {
         _anim = GetComponentInChildren<Animator>();
@@ -56,20 +57,19 @@ public class RagdollController : MonoBehaviour
         if (capsule) capsule.enabled = false;
         MakeRagdoll(force, hitPoint);
     }
-    //void HandleDeath()
-    //{
-    //    Vector3 randomForce = Random.onUnitSphere * 2f; // o el impacto real si lo guardás
-    //    Vector3 hitPoint = enemyHealth.transform.position + Vector3.up * 0.5f;
 
-    //    ragdollController.MakeRagdoll(randomForce, hitPoint);
-    //}
 
     void SetRagdollState(bool active)
     {
         _isRagdoll = active;
 
         // Animator
-        if (_anim) _anim.enabled = !active;
+        if (_anim)
+        {
+            _anim.enabled = !active;
+            _anim.updateMode = AnimatorUpdateMode.Normal; // opcional: fuerza update clásico
+        }
+
 
         // NavMeshAgent
         if (_agent) _agent.enabled = !active;
@@ -100,34 +100,19 @@ public class RagdollController : MonoBehaviour
     {
         if (_isRagdoll) return;
 
-        // opcional: transferir velocidad del agent al ragdoll
-        Vector3 transferredVel = Vector3.zero;
-        if (_agent != null) transferredVel = _agent.velocity;
+        Vector3 transferredVel = _agent ? _agent.velocity : Vector3.zero;
+        SetRagdollState(true); // ahora los RBs dejan de ser kinematic
 
-        SetRagdollState(true);
+        var targetRB = _enemyHealth.LastHitRB;
+        if (targetRB == null) targetRB = FindPelvis();
 
-        // aplicar la velocidad y fuerza al rigidbody central (hip)
-        // Buscá un rigidbody que sea "hips" o "pelvis"
-        Rigidbody pelvis = FindPelvis();
-        if (pelvis != null)
+        if (targetRB != null)
         {
-            pelvis.linearVelocity = transferredVel;
-            pelvis.AddForceAtPosition(force, forcePoint, ForceMode.Impulse);
+            targetRB.linearVelocity = transferredVel;
+            targetRB.AddForceAtPosition(force, forcePoint, ForceMode.Impulse);
         }
-        else
-        {
-            // si no hay pelvis, aplica a todos ligeramente
-            foreach (var (rb, _) in _parts)
-            {
-                rb.linearVelocity = transferredVel;
-                rb.AddForce(force * 0.1f, ForceMode.Impulse);
-            }
-        }
-
-        // opcional: programar conversión a estático para perf
-        if (fadeToKinematicAfter > 0f)
-            Invoke(nameof(FadeToKinematic), fadeToKinematicAfter);
     }
+
 
     Rigidbody FindPelvis()
     {

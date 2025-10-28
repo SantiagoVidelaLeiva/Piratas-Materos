@@ -13,13 +13,16 @@ public class CharacterHealth : MonoBehaviour, IDamageable
     public float MaxHealth => maxHealth;
 
     public System.Action OnDied;
+    public System.Action OnDamaged;
     public Vector3 LastHitPoint { get; private set; }
     public Vector3 LastHitForce { get; private set; }
+    public Rigidbody LastHitRB { get; private set; }
 
     void Awake()
     {
         currentHealth = maxHealth;
         characterHealthBar.SetMaxHealth(maxHealth);
+
     }
 
     public void TakeDamage(float amount)
@@ -40,7 +43,7 @@ public class CharacterHealth : MonoBehaviour, IDamageable
             Die();
         }
     }
-    public void TakeDamage1(float amount, Vector3 hitPoint, Vector3 hitForce)
+    public void TakeDamage1(float amount, Vector3 hitPoint, Vector3 hitForce, Rigidbody hitRB)
     {
         if (isDead) return;
 
@@ -48,8 +51,9 @@ public class CharacterHealth : MonoBehaviour, IDamageable
         currentHealth -= amount;
         LastHitPoint = hitPoint;
         LastHitForce = hitForce;
+        LastHitRB = hitRB;
         Debug.Log($"{gameObject.name} recibi� {amount} de da�o. Vida actual: {currentHealth}");
-
+        OnDamaged?.Invoke();
         if (currentHealth <= 0)
         {
             Die();
