@@ -7,7 +7,7 @@ public class RagdollController : MonoBehaviour
 {
     [Header("Opciones")]
     public bool startRagdolled = false;
-    public float fadeToKinematicAfter = 8f; // opcional: convertir a estático después de Xs
+    public float fadeToKinematicAfter = 8f;
 
     Animator _anim;
     NavMeshAgent _agent;
@@ -23,18 +23,14 @@ public class RagdollController : MonoBehaviour
         _anim = GetComponentInChildren<Animator>();
         _agent = GetComponentInParent<NavMeshAgent>();
         _enemyHealth = GetComponentInParent<CharacterHealth>();
-        // recolectar componentes en los hijos (excepto body root si deseás)
         _rigidbodies = GetComponentsInChildren<Rigidbody>(includeInactive: true);
         _colliders = GetComponentsInChildren<Collider>(includeInactive: true);
 
-        // llenar lista de partes (evitar incluir el collider del "capsule" del enemy si lo tenes aparte)
         foreach (var rb in _rigidbodies)
         {
-            // opcional: saltar el rigidbody del root si ese no es parte del ragdoll
             _parts.Add((rb, rb.GetComponent<Collider>()));
         }
 
-        // inicial: ragdoll desactivado (kinematic true)
         SetRagdollState(startRagdolled);
     }
     void OnEnable()
@@ -63,29 +59,22 @@ public class RagdollController : MonoBehaviour
     {
         _isRagdoll = active;
 
-        // Animator
         if (_anim)
         {
             _anim.enabled = !active;
-            _anim.updateMode = AnimatorUpdateMode.Normal; // opcional: fuerza update clásico
+            _anim.updateMode = AnimatorUpdateMode.Normal;
         }
 
 
-        // NavMeshAgent
         if (_agent) _agent.enabled = !active;
 
-        // partes físicas
         foreach (var (rb, col) in _parts)
         {
-            // Muchas setups usan isKinematic = true para "apagar" física.
             rb.isKinematic = !active;
 
-            // Si querés que al principio los colliders no interfieran con raycasts/physics,
-            // podés desactivarlos mientras kinematic = true. Personalmente dejo enabled true.
             if (col) col.enabled = true;
         }
 
-        // Si activamos ragdoll, "despertamos" las rigidbodies para que reaccionen inmediatamente
         if (active)
         {
             foreach (var (rb, _) in _parts)
@@ -95,13 +84,12 @@ public class RagdollController : MonoBehaviour
         }
     }
 
-    // Llamar cuando muere
     public void MakeRagdoll(Vector3 force, Vector3 forcePoint)
     {
         if (_isRagdoll) return;
 
         Vector3 transferredVel = _agent ? _agent.velocity : Vector3.zero;
-        SetRagdollState(true); // ahora los RBs dejan de ser kinematic
+        SetRagdollState(true);
 
         var targetRB = _enemyHealth.LastHitRB;
         if (targetRB == null) targetRB = FindPelvis();

@@ -36,14 +36,11 @@ public class RangedAttack : AttackBase
             return;
         }
 
-        // 1. Calcular origen y dirección
         Vector3 origin = firePoint ? firePoint.position : transform.position + Vector3.up * 1.5f;
 
-        // le apunto un poquito al pecho en vez de a la cabeza
         Vector3 adjustTarget = seenPos + Vector3.down * 0.2f;
         Vector3 dir = (adjustTarget - origin).normalized;
 
-        // 2. Aplicar spread (dispersión)
         float spread = _data.spreadDegrees;
         dir = Quaternion.Euler(
             Random.Range(-spread, spread),
@@ -51,7 +48,6 @@ public class RangedAttack : AttackBase
             0f
         ) * dir;
 
-        // 3. Sonido del disparo
         if (Time.time >= _nextShootSoundTime && audioSource)
         {
             AudioClip clip = _data.attackSFX;
@@ -64,18 +60,15 @@ public class RangedAttack : AttackBase
             }
         }
 
-        // 4. Muzzle flash
         if (_data.muzzleFlashPrefab && firePoint)
         {
             var flash = Instantiate(_data.muzzleFlashPrefab, firePoint.position, firePoint.rotation, firePoint);
             Destroy(flash, _data.muzzleFlashLife);
         }
 
-        // 5. Raycast daño
         float range = _data.maxRange;
         if (Physics.Raycast(origin, dir, out var hit, range, hitMask, QueryTriggerInteraction.Ignore))
         {
-            // hacer daño
             hit.collider.GetComponent<IDamageable>()?.TakeDamage(_data.baseDamage);
         }
     }
@@ -96,7 +89,6 @@ public class RangedAttack : AttackBase
 
         if (Physics.Raycast(origin, dir, out var hit, maxDist, hitMask, QueryTriggerInteraction.Ignore))
         {
-            // hit.collider.root == target.root ?
             return hit.collider.transform.root == target.root;
         }
 

@@ -27,8 +27,8 @@ public class CameraOrbit : MonoBehaviour
     [SerializeField] float _shoulderOffsetY = 0f;
 
     [Header("Spawn arma al apuntar")]
-    [SerializeField] GameObject weaponPrefab;       // tu prefab del arma
-    [SerializeField] Transform weaponSocket;        // socket de la mano derecha
+    [SerializeField] GameObject weaponPrefab;
+    [SerializeField] Transform weaponSocket;
     [SerializeField] Transform aimTarget;
     Camera _cam;
     [SerializeField] float _yaw;
@@ -36,7 +36,6 @@ public class CameraOrbit : MonoBehaviour
     float _aimT;
     Rigidbody _playerRb;
     GameObject _spawnedWeapon;
-    [SerializeField] Vector2 _aimLockLocalXZ = new Vector2(-0.024f, 0.0361f);
     [SerializeField] float _lockSnap = 50f;
     [SerializeField] GameObject _crosshair;
 
@@ -60,7 +59,6 @@ public class CameraOrbit : MonoBehaviour
 
         bool aiming = Input.GetMouseButton(1);
 
-        // === Cámara ===
         _yaw += Input.GetAxis("Mouse X") * _xSpeed * Time.deltaTime;
         _pitch -= Input.GetAxis("Mouse Y") * _ySpeed * Time.deltaTime;
         _pitch = Mathf.Clamp(_pitch, _yMin, _yMax);
@@ -80,10 +78,9 @@ public class CameraOrbit : MonoBehaviour
         if (_cam)
             _cam.fieldOfView = Mathf.Lerp(_normalFov, _aimFov, _aimT);
 
-        // === Rotar jugador al apuntar ===
+        //Rotar jugador al apuntar
         if (_rotatePlayerOnAim && aiming)
         {
-            // usar el forward de la cámara pero sin componente vertical
             Vector3 dir = transform.forward;
             dir.y = 0f;
             if (dir.sqrMagnitude > 0.0001f)
@@ -103,11 +100,9 @@ public class CameraOrbit : MonoBehaviour
             _spawnedWeapon.transform.localEulerAngles = new Vector3(270f, 90f, 0f);
             _spawnedWeapon.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
 
-            // ← aquí assignamos muzzle al PistolAttack
             var weaponComp = _spawnedWeapon.GetComponent<Muzzle>();
             if (weaponComp != null && weaponComp.muzzle != null)
             {
-                // asumimos que PistolAttack está en el player o en un hijo
                 var pistolAttack = _target.GetComponentInChildren<PistolAttack>();
                 if (pistolAttack != null)
                     pistolAttack.muzzle = weaponComp.muzzle;
@@ -115,7 +110,6 @@ public class CameraOrbit : MonoBehaviour
         }
         else if (!aiming && _spawnedWeapon != null)
         {
-            // quitar referencia antes de destruir el arma
             var pistolAttack = _target.GetComponentInChildren<PistolAttack>();
             if (pistolAttack != null)
                 pistolAttack.muzzle = null;

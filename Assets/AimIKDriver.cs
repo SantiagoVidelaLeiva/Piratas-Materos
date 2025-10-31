@@ -40,7 +40,7 @@ public class AimIKDriver : MonoBehaviour
         Vector3 limitedDir = pitchRot * flatDir;
 
         float followDistance = hit.collider ? Vector3.Distance(origin, dest) : 20f;
-        followDistance = Mathf.Max(followDistance, 2f); // evita “pegotearse” a distancias cortas
+        followDistance = Mathf.Max(followDistance, 2f);
         Vector3 targetPos = origin + limitedDir * followDistance;
 
         aimTarget.position = Vector3.Lerp(aimTarget.position, targetPos, Time.deltaTime * followSpeed);

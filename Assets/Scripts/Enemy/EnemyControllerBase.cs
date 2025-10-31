@@ -181,11 +181,11 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
                 break;
         }
 ;
-        float raw = new Vector3(agent.velocity.x, 0f, agent.velocity.z).magnitude; // m/s
-        float norm = Mathf.InverseLerp(0f, chaseSpeed, raw); // 0..1 usando tu chaseSpeed como tope
+        float raw = new Vector3(agent.velocity.x, 0f, agent.velocity.z).magnitude;
+        float norm = Mathf.InverseLerp(0f, chaseSpeed, raw);
         _smoothNorm = Mathf.Lerp(_smoothNorm, norm, Time.deltaTime * 5f);
         _enemyAnimator.SetLayerWeight(_smoothNorm < 0.7f ? 1f : 0f);
-        if (Mathf.Abs(norm - _lastSpeed01) > 0.01f) // evita spam
+        if (Mathf.Abs(norm - _lastSpeed01) > 0.01f)
         {
             _lastSpeed01 = norm;
             OnSpeed01Changed?.Invoke(norm);
@@ -263,6 +263,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
                     agent.updateRotation = true;
                     EndScan();
                     agent.SetDestination(next.position);
+                    RaiseAnimState(AnimState.Suspicious);
                 }
                 else
                 {
@@ -407,7 +408,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
                 if (AgentIsValid())
                     agent.isStopped = false;
                 agent.updateRotation = true;
-                //RaiseAnimState(AnimState.Danger);
+                RaiseAnimState(AnimState.Danger);
                 break;
         }
 
@@ -523,13 +524,11 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     {
         navPos = point;
 
-        // 1) Proyectar a NavMesh (evita puntos fuera de la malla)
         if (!NavMesh.SamplePosition(point, out var hit, 1.5f, NavMesh.AllAreas))
             return false;
 
         navPos = hit.position;
 
-        // 2) Calcular path completo
         var path = new NavMeshPath();
         if (!NavMesh.CalculatePath(transform.position, navPos, NavMesh.AllAreas, path))
             return false;
@@ -628,7 +627,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     private void HandleDamaged_EnterDanger()
     {
         if (_enemyHealth == null || _enemyHealth.IsDead) return;
-        StopCoroutine(nameof(DelayedEnterDanger)); // por si llega otro daño antes
+        StopCoroutine(nameof(DelayedEnterDanger));
         StartCoroutine(DelayedEnterDanger());
     }
     private IEnumerator DelayedEnterDanger()
