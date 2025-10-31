@@ -23,7 +23,7 @@ public class EnemyAnimator : MonoBehaviour
     private AnimState _current;
     int upperBodyLayerIdx;
 
-    EnemyControllerBase _controller;   // ← referencia al emisor
+    EnemyControllerBase _controller;
 
     void Reset()
     {
@@ -65,7 +65,6 @@ public class EnemyAnimator : MonoBehaviour
     }
     private void HandleSpeed(float norm)
     {
-        // damping + deltaTime para que no patine
         animator.SetFloat(SpeedHash, norm, 0.10f, Time.deltaTime);
     }
     void HandleState(AnimState next)
@@ -96,7 +95,6 @@ public class EnemyAnimator : MonoBehaviour
         animator.SetBool(paramHash, value);
     }
 
-    // helpers públicos si los seguís usando en otro lado (opcionales)
     public void SetLayerWeight(float weight)
     {
         animator.SetLayerWeight(upperBodyLayerIdx, weight);
@@ -111,7 +109,6 @@ public class EnemyAnimator : MonoBehaviour
         if (upperBodyLayerIdx < 0) upperBodyLayerIdx = animator.GetLayerIndex("UpperBody");
         var st = animator.GetCurrentAnimatorStateInfo(upperBodyLayerIdx);
         var nx = animator.GetNextAnimatorStateInfo(upperBodyLayerIdx);
-        // Usamos tag "Firing" en el clip de Upper_Fire
         return st.IsTag("Firing") || nx.IsTag("Firing");
     }
 
