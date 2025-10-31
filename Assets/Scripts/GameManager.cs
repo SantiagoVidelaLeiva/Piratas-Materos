@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviour
                 Health playerHealth = playerGo.GetComponent<Health>();
                 if (playerHealth != null)
                 {
-                    // No es necesario suscribirse aquí si Health ya llama a OnPlayerDied.
+                    // No es necesario suscribirse aquï¿½ si Health ya llama a OnPlayerDied.
                 }
             }
         }
@@ -70,7 +70,7 @@ public class GameManager : MonoBehaviour
         OnLivesChanged?.Invoke(_currentLives);
     }
 
-    // Este método es llamado desde el script Health cuando el jugador muere.
+    // Este mï¿½todo es llamado desde el script Health cuando el jugador muere.
     public void OnPlayerDied()
     {
         _currentLives--;
@@ -86,6 +86,7 @@ public class GameManager : MonoBehaviour
         else
         {
             // Si se le acaban las vidas, carga la escena de derrota.
+            Cursor.lockState = CursorLockMode.None;
             _currentLives = 3;
             SceneManager.LoadScene("Lose");
         }
@@ -99,7 +100,7 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene("Win");
     }
 
-    // Método público para restablecer las vidas a su máximo.
+    // Mï¿½todo pï¿½blico para restablecer las vidas a su mï¿½ximo.
     public void ResetLives()
     {
         _currentLives = maxLives;
