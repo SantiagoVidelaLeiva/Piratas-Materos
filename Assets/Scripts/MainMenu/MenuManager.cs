@@ -6,8 +6,8 @@ using TMPro;
 public class MenuManager : MonoBehaviour
 {
     [Header("Paneles")]
-    public GameObject panelPrincipal;   // Panel con Jugar / Opciones / Salir
-    public GameObject panelOpciones;    // Panel con las opciones
+    public GameObject panelPrincipal;
+    public GameObject panelOpciones;
 
     [Header("Opciones UI")]
     public Toggle fullscreenToggle;
@@ -17,11 +17,9 @@ public class MenuManager : MonoBehaviour
 
     private void Start()
     {
-        // Mostrar solo el panel principal al inicio
         if (panelPrincipal) panelPrincipal.SetActive(true);
         if (panelOpciones) panelOpciones.SetActive(false);
 
-        // Fullscreen
         if (fullscreenToggle)
         {
             fullscreenToggle.isOn = Screen.fullScreen;
@@ -38,16 +36,12 @@ public class MenuManager : MonoBehaviour
             volumenSlider.value = vol;
             volumenSlider.onValueChanged.AddListener(CambiarVolumen);
         }
-
-        // Sin forzar resolución: Unity usa la nativa del dispositivo.
-        // Si querés "ventana sin bordes" usando la resolución del monitor:
-        // Screen.fullScreenMode = FullScreenMode.FullScreenWindow;
     }
 
     // ---------- BOTONES PRINCIPALES ----------
     public void Jugar()
     {
-        SceneManager.LoadScene("Mapa"); // Cambiá el nombre si corresponde
+        SceneManager.LoadScene("Level1");
         Time.timeScale = 1.0f;
     }
 
@@ -79,8 +73,7 @@ public class MenuManager : MonoBehaviour
     public void CambiarPantallaCompleta(bool isFullscreen)
     {
         Screen.fullScreen = isFullscreen;
-        // Alternativa sin bordes:
-        // Screen.fullScreenMode = isFullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
+
     }
 
     public void CambiarVolumen(float v)

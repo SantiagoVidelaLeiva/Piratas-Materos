@@ -105,6 +105,7 @@ public class EnemyAnimator : MonoBehaviour
     {
         animator.Play(animHash, layer, normalizedTime);
     }
+
     public bool IsUpperFiring()
     {
         if (upperBodyLayerIdx < 0) upperBodyLayerIdx = animator.GetLayerIndex("UpperBody");

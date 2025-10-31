@@ -1204,18 +1204,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c5c3cdb7cb79054f8d40ae48ccb451a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 10
-  cooldown: 0.2
-  maxRange: 15
+  _data: {fileID: 11400000, guid: b9d80961c802c0b4f956cff907d251d0, type: 2}
   firePoint: {fileID: 0}
   hitMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  spreadDegrees: 4
-  muzzleFlashPrefab: {fileID: 100000, guid: 03a4a1935a9f4454c861dfa0aa6df562, type: 3}
-  muzzleFlashLife: 0.5
   audioSource: {fileID: 0}
-  shootClip: {fileID: 8300000, guid: 43686c56f8543e14c95b13d980a93c1b, type: 3}
+  shootSoundCooldown: 0.58
 --- !u!114 &8274671443252118778
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -8132,6 +8132,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16b0f26db869ef24190da99a23c80a20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _materialIndex: 0
 --- !u!23 &381831543
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -18797,6 +18798,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16b0f26db869ef24190da99a23c80a20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _materialIndex: 0
 --- !u!43 &819303026
 Mesh:
   m_ObjectHideFlags: 0
@@ -26937,7 +26939,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _requiredActivations: 2
   _doorObject: {fileID: 1125693261}
-  _openPosition: {x: -18.65723, y: 5.63, z: 33.79175}
+  _openEulerRotation: {x: 0, y: 0, z: 0}
   _openSpeed: 1
 --- !u!43 &1132940503
 Mesh:
@@ -27958,6 +27960,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16b0f26db869ef24190da99a23c80a20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _materialIndex: 0
 --- !u!23 &1166450800
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -34385,6 +34388,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16b0f26db869ef24190da99a23c80a20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _materialIndex: 0
 --- !u!23 &1419134697
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -34485,6 +34489,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16b0f26db869ef24190da99a23c80a20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _materialIndex: 0
 --- !u!23 &1424302278
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -44246,6 +44251,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16b0f26db869ef24190da99a23c80a20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _materialIndex: 0
 --- !u!114 &1825159612
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -47172,6 +47178,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: InGameCanvas
       objectReference: {fileID: 0}
+    - target: {fileID: 7868737056527029870, guid: 7d127b4a991d0af4b80dd909622586a7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8190458015351971641, guid: 7d127b4a991d0af4b80dd909622586a7, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -47430,6 +47440,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16b0f26db869ef24190da99a23c80a20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _materialIndex: 0
 --- !u!23 &2101208649
 MeshRenderer:
   m_ObjectHideFlags: 0
