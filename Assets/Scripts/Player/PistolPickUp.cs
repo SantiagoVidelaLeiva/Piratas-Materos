@@ -11,8 +11,8 @@ public class PistolPickup : MonoBehaviour
         var pistolAttack = other.GetComponentInChildren<PistolAttack>();
         if (pistolAttack != null)
         {
-            pistolAttack.GivePistol();          // activa la pistola
-            Destroy(gameObject);                // elimina el objeto flotante
+            pistolAttack.GivePistol();
+            Destroy(gameObject);
         }
     }
 }
