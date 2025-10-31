@@ -263,6 +263,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
                     agent.updateRotation = true;
                     EndScan();
                     agent.SetDestination(next.position);
+                    RaiseAnimState(AnimState.Suspicious);
                 }
                 else
                 {
@@ -407,7 +408,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
                 if (AgentIsValid())
                     agent.isStopped = false;
                 agent.updateRotation = true;
-                //RaiseAnimState(AnimState.Danger);
+                RaiseAnimState(AnimState.Danger);
                 break;
         }
 
