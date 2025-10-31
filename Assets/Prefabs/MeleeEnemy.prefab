@@ -445,6 +445,7 @@ MonoBehaviour:
   turnSpeed: 500
   proximityRadius: 10
   drawGizmos: 1
+  aimTurnSpeed: 6
 --- !u!114 &1107635002726145769
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -923,6 +924,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: abb90f5a626a42d4d867486f53ad065e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7743205158600304718}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: abb90f5a626a42d4d867486f53ad065e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6966493003861417645}
   m_SourcePrefab: {fileID: 100100000, guid: abb90f5a626a42d4d867486f53ad065e, type: 3}
 --- !u!4 &4006258923606540566 stripped
 Transform:
@@ -969,3 +973,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 1569836326261863308}
+--- !u!114 &6966493003861417645
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4382785217929075628}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a154403587077f4c90930b3808feca8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startRagdolled: 0
+  fadeToKinematicAfter: 8
