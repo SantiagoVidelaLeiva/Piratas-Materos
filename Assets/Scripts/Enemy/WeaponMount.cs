@@ -2,7 +2,7 @@
 
 public class WeaponMount : MonoBehaviour
 {
-    [SerializeField] Transform weaponSocketR;   // mano derecha
+    [SerializeField] Transform weaponSocketR;
     [SerializeField] GameObject weaponPrefab;
     [SerializeField] Animator anim;
     [Range(0, 1)] public float leftIKWeight = 1f;
@@ -11,7 +11,7 @@ public class WeaponMount : MonoBehaviour
     [SerializeField] Transform gripL;
     bool _dropped;
 
-    CharacterHealth _health;  // para escuchar OnDied
+    CharacterHealth _health;
     [SerializeField] Transform leftHandBone;
     [SerializeField] Transform rightHandBone;
 
@@ -59,10 +59,9 @@ public class WeaponMount : MonoBehaviour
     void HandleDeath()
     {
         ResetHandRotations();
-        DropWeapon();          // 🔹 des-parenta + física
-        leftIKWeight = 0f;     // 🔹 apagá IK para que la mano no tire
+        DropWeapon();
+        leftIKWeight = 0f;
         anim.enabled = false;
-        // Si usás Animation Rigging, apagalo también en tu RagdollController (como te pasé antes).
     }
     void ResetHandRotations()
     {
@@ -75,25 +74,19 @@ public class WeaponMount : MonoBehaviour
         if (_dropped || !currentWeapon) return;
         _dropped = true;
 
-        // 1) Des-parentar
         var wt = currentWeapon.transform;
         wt.SetParent(null, true);
 
-        // 2) Asegurar física en el arma
         var col = currentWeapon.GetComponent<Collider>();
-        //if (!col) col = currentWeapon.AddComponent<BoxCollider>(); // o el que corresponda
         col.enabled = true;
 
         var rb = currentWeapon.GetComponent<Rigidbody>();
-        //if (!rb) rb = currentWeapon.AddComponent<Rigidbody>();
         rb.isKinematic = false;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
 
-        // 3) Empujoncito suave para que no choque contra el torso
         var forward = transform.forward;
         rb.AddForce(forward * 2f, ForceMode.Impulse);
 
-        // (Opcional) Ignorar colisiones arma↔cuerpo un ratito para evitar torques raros
         StartCoroutine(IgnoreCollisionsWithOwnerFor(0.5f, col));
     }
 
