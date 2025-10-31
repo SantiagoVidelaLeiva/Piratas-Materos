@@ -36,7 +36,7 @@ public class MenuScript : MonoBehaviour
     }
     public void StartGame()
     {
-        SceneManager.LoadScene("Mapa");
+        SceneManager.LoadScene("Level1");
         Time.timeScale = 1.0f;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
