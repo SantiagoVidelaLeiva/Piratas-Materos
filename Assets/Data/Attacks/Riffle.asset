@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9e1306836c7dc24096e399afb72cbcb, type: 3}
+  m_Name: Riffle
+  m_EditorClassIdentifier: 
+  attackName: Ranged Attack
+  baseDamage: 30
+  fireRate: 3
+  cooldown: 0.5
+  maxRange: 20
+  spreadDegrees: 2.5
+  meleeRadius: 1.3
+  attackSFX: {fileID: 8300000, guid: 43686c56f8543e14c95b13d980a93c1b, type: 3}
+  muzzleFlashPrefab: {fileID: 100000, guid: 03a4a1935a9f4454c861dfa0aa6df562, type: 3}
+  muzzleFlashLife: 0.1

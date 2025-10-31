@@ -4,15 +4,15 @@ using UnityEngine.UI;
 public class PistolAttack : MonoBehaviour
 {
     [Header("Refs")]
-    [SerializeField] CameraOrbit camOrbit;                 // asigná tu CameraOrbit
+    [SerializeField] CameraOrbit camOrbit;
     [SerializeField] public Transform muzzle;
     [SerializeField] Animator animator;
     static readonly int IsAiming_Hash = Animator.StringToHash("IsAiming");
 
     [Header("UI / World Reticle")]
-    [SerializeField] RectTransform reticleUI;              // opcional (UI)
-    [SerializeField] Transform reticleWorld;               // opcional (world-space marcador)
-    [SerializeField] bool reticleUITracksHit = false;      // si true, la UI se mueve al hit (útil debug)
+    [SerializeField] RectTransform reticleUI;
+    [SerializeField] Transform reticleWorld;
+    [SerializeField] bool reticleUITracksHit = false;
 
     [Header("Masks")]
     [SerializeField] LayerMask aimMask = ~0;
@@ -32,8 +32,8 @@ public class PistolAttack : MonoBehaviour
     [Header("Audio")]
     [SerializeField] AudioSource audioSource;
     [SerializeField] AudioClip shootClip;
-
-    // último punto de mira (lo que ve la cámara en el centro)
+    [Header("Pickup")]
+    [SerializeField] bool hasPistol = false;
     public Vector3 LastAimPoint { get; private set; }
     public bool HasAimHit { get; private set; }
 
@@ -41,11 +41,7 @@ public class PistolAttack : MonoBehaviour
     {
         if (!animator) animator = GetComponentInChildren<Animator>();
         if (!camOrbit) camOrbit = Camera.main ? Camera.main.GetComponent<CameraOrbit>() : null;
-
-        // asegurá que no te pegues al Player
-        int player = LayerMask.NameToLayer("Player");
-        if (player >= 0) aimMask &= ~(1 << player);
-        if(!audioSource) audioSource = GetComponent<AudioSource>();
+        if (!audioSource) audioSource = GetComponent<AudioSource>();
     }
     private void Start()
     {
@@ -60,38 +56,44 @@ public class PistolAttack : MonoBehaviour
     void Update()
     {
         if (!camOrbit || !muzzle) return;
-
+        if (!hasPistol)
+        {
+            if (animator) animator.SetBool(IsAiming_Hash, false);
+            return;
+        }
         if (animator) animator.SetBool(IsAiming_Hash, Input.GetMouseButton(1));
 
-        // === Aiming (centro de pantalla) ===
         Ray camRay = camOrbit.GetAimRay();
         HasAimHit = Physics.Raycast(camRay, out RaycastHit camHit, maxRange, aimMask, QueryTriggerInteraction.Ignore);
         LastAimPoint = HasAimHit ? camHit.point : camRay.GetPoint(maxRange);
 
-        // Actualizar retículas
         UpdateReticles(camRay, LastAimPoint);
 
         if (Input.GetButtonDown("Fire1"))
             Shoot(camRay, LastAimPoint);
         Debug.DrawRay(camRay.origin, camRay.direction * maxRange, Color.cyan, 0f);
         Debug.DrawLine(muzzle.position, LastAimPoint, Color.yellow, 0f);
+        if (reticleUI)
+        {
+            bool aiming = Input.GetMouseButton(1);
+            reticleUI.gameObject.SetActive(aiming);
+        }
     }
-
+    public void GivePistol()
+    {
+        hasPistol = true;
+    }
     void UpdateReticles(Ray camRay, Vector3 aimPoint)
     {
-        // UI fija al centro (crosshair clásico): dejá tu imagen centrada en el Canvas y listo.
-        // Si querés que la UI "persiga" el punto de impacto (útil debug), activá reticleUITracksHit:
         if (reticleUI && reticleUITracksHit && Camera.main)
         {
             Vector3 screen = Camera.main.WorldToScreenPoint(aimPoint);
             reticleUI.position = screen;
         }
 
-        // Marcador world-space (si lo usás)
         if (reticleWorld)
         {
             reticleWorld.position = aimPoint;
-            // que mire a la cámara para verse “plano”
             var cam = Camera.main;
             if (cam) reticleWorld.rotation = Quaternion.LookRotation(reticleWorld.position - cam.transform.position);
         }
@@ -99,31 +101,26 @@ public class PistolAttack : MonoBehaviour
 
     void Shoot(Ray camRay, Vector3 aimPoint)
     {
-        // FX en muzzle
         if (Time.time < _nextFireTime) return;
         _nextFireTime = Time.time + 1f / fireRate;
         if (muzzleFlash) StartCoroutine(FlashOnce(muzzleFlash, 0.05f));
         if (audioSource && shootClip)
             audioSource.PlayOneShot(shootClip);
 
-        // Dirección desde el muzzle hacia el aimPoint (centro de pantalla)
         Vector3 toAim = aimPoint - muzzle.position;
         if (toAim.sqrMagnitude < 1e-4f) toAim = muzzle.forward;
 
-        // Forzar hemisferio (por si algo quedó atrás de la cámara)
         if (Vector3.Dot(toAim, camRay.direction) < 0f)
             toAim = camRay.direction;
 
         Vector3 dirFromMuzzle = toAim.normalized;
 
-        // Near-wall
         if (Physics.Raycast(muzzle.position, dirFromMuzzle, out RaycastHit closeHit, nearWallDistance, aimMask, QueryTriggerInteraction.Ignore))
         {
             ApplyHit(closeHit, muzzle.position);
             return;
         }
 
-        // Tiro definitivo desde el muzzle
         if (Physics.Raycast(muzzle.position, dirFromMuzzle, out RaycastHit finalHit, maxRange, aimMask, QueryTriggerInteraction.Ignore))
             ApplyHit(finalHit, muzzle.position);
 
@@ -133,7 +130,6 @@ public class PistolAttack : MonoBehaviour
     {
         if (impactPrefab)
         {
-            // buscar si el collider pertenece a un enemigo
             bool hitEnemy = hit.collider.GetComponentInParent<CharacterHealth>() != null;
 
             if (!hitEnemy)

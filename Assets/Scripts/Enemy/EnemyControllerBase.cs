@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using NUnit.Framework.Internal;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Rendering;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyControllerBase : MonoBehaviour, IVisionProvider
@@ -17,8 +17,8 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     //        Inspector Fields
     // ============================
     [Header("References")]
-    [SerializeField] protected NavMeshAgent agent;   
-    [SerializeField] protected Transform eyes;       
+    [SerializeField] protected NavMeshAgent agent;
+    [SerializeField] protected Transform eyes;
     [SerializeField] protected Transform player;
     [SerializeField] protected Transform nearDetect;
     [Header("Patrol")]
@@ -43,9 +43,9 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     [SerializeField] private Transform visionPivot;
 
     [Header("Speeds")]
-     private float patrolSpeed = 2.0f;
-     private float suspiciousSpeed = 3.0f;
-     protected float chaseSpeed = 4.5f;
+    private float patrolSpeed = 2.0f;
+    private float suspiciousSpeed = 3.0f;
+    protected float chaseSpeed = 4.5f;
     [SerializeField] private float turnSpeed = 360f;
 
     [Header("Proximity / Awareness")]
@@ -55,19 +55,19 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     [SerializeField] private bool drawGizmos = true;
 
 
-     
+
     // ============================
     //        Runtime State
     // ============================
     private EnemyState _state = EnemyState.Patrolling;
-    public EnemyState CurrentState { get { return _state; } } 
+    public EnemyState CurrentState { get { return _state; } }
 
     public event Action<EnemyState> OnStateChange;
     public event Action OnEnemyDestroyed;
     public event Action<float> OnSpeed01Changed;
     public event Action<AnimState> OnAnimState;
     public event Action<int> OnAnimTrigger;
-    public event Action<int,bool> OnAnimBool;
+    public event Action<int, bool> OnAnimBool;
     protected Vector3 _lastKnownPos;
 
     private bool _scanActive;
@@ -77,7 +77,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
 
     protected IAttackStrategy _iattackStrategy;
     private CharacterHealth health;
-    static readonly int Shoot_Hash = Animator.StringToHash("Shoot");
+    static readonly int Shoot_Hash = Animator.StringToHash("ShootBool");
     static readonly int AimBool_Hash = Animator.StringToHash("IsAiming");
 
     private bool _isScaning;
@@ -93,7 +93,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     // ============================
     //      Unity Lifecycle
     // ============================
-    protected virtual void Awake() // ← antes private
+    protected virtual void Awake()
     {
         if (!agent) agent = GetComponent<NavMeshAgent>();
 
@@ -111,7 +111,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             visionPivot = transform.Find("VisionPivot");
         if (visionPivot) _pivotBaseLocalRot = visionPivot.localRotation;
         _iattackStrategy = GetComponent<IAttackStrategy>();
-        if(!_enemyHealth)
+        if (!_enemyHealth)
             _enemyHealth = GetComponent<CharacterHealth>();
         _enemyHealth.OnDamaged += HandleDamaged_EnterDanger;
 
@@ -121,9 +121,6 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             health.OnDied += HandleDeath;
         else
             Debug.LogError($"[{name}] Falta CharacterHealth");
-
-        //if (!animator)
-        //    animator = GetComponentInChildren<Animator>(true);
         if (!_enemyAnimator)
             _enemyAnimator = GetComponentInChildren<EnemyAnimator>(true);
         if (patrolPoints != null && patrolPoints.Length > 0)
@@ -217,9 +214,8 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         }
         if (patrolPoints == null || patrolPoints.Length == 0)
         {
-            // si no hay puntos, quedarse quieto
-            agent.isStopped = true;
-           // RaiseAnimState(AnimState.Idle);
+            if (AgentIsValid())
+                agent.isStopped = true;
             return;
         }
         if (patrolPoints != null && patrolPoints.Length > 0)
@@ -228,7 +224,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             {
                 AdvancePatrol();
             }
-                                                                 // Si puse por inspector puntos de patrulla los recorre
+            // Si puse por inspector puntos de patrulla los recorre
         }
     }
 
@@ -262,7 +258,8 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
                 if (next != null)
                 {
                     _movingToSuspicionPoint = true;
-                    agent.isStopped = false;
+                    if (AgentIsValid())
+                        agent.isStopped = false;
                     agent.updateRotation = true;
                     EndScan();
                     agent.SetDestination(next.position);
@@ -282,7 +279,8 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             if (next != null)
             {
                 _movingToSuspicionPoint = true;  // Sube arriba y scanea devuelta en cada punto
-                agent.isStopped = false;
+                if (AgentIsValid())
+                    agent.isStopped = false;
                 agent.updateRotation = true;
                 agent.SetDestination(next.position);
                 return;
@@ -292,7 +290,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         SetState(EnemyState.Patrolling);
     }
 
-    protected virtual void TickDanger(bool seesPlayer, Vector3 seenPos) 
+    protected virtual void TickDanger(bool seesPlayer, Vector3 seenPos)
     {
         agent.speed = chaseSpeed;
 
@@ -300,7 +298,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         {
             _lastKnownPos = seenPos;
             lastSeenTime = Time.time;
-            
+
 
             float stopDist = _iattackStrategy?.StopDistance ?? 1.5f;
             agent.stoppingDistance = stopDist; // Detiene al agente segun el rango de cada ataque usado en la interface, si da null por CD es 1.5f
@@ -309,22 +307,25 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             bool isUpperFiring = _enemyAnimator != null && _enemyAnimator.IsUpperFiring();
             if (dist > agent.stoppingDistance + 0.05f && !isUpperFiring)                  // Si la distancia es mayor al rango del ataque de la interface, seguir persiguiendo
             {
-                agent.isStopped = false;
+                if (AgentIsValid())
+                    agent.isStopped = false;
                 agent.updateRotation = true;
                 agent.SetDestination(player.position);
+                RaiseBool(Shoot_Hash, false);
             }
             else
             {
-                
-                bool standing = agent.velocity.sqrMagnitude <0.1f;
+
+                bool standing = agent.velocity.sqrMagnitude < 0.1f;
                 RaiseBool(AimBool_Hash, true);
-                agent.isStopped = true;
+                if (AgentIsValid())
+                    agent.isStopped = true;
                 agent.ResetPath();                   // Cancelo la ruta del agente
                 FaceTowards(seenPos);                // Miro hacia adelante donde esta mi jugador
-                if ( _iattackStrategy != null && _iattackStrategy.CanAttack(player, seenPos))     // Llamo a la interface si puedo atacar
+                if (_iattackStrategy != null && _iattackStrategy.CanAttack(player, seenPos))     // Llamo a la interface si puedo atacar
                 {
                     _iattackStrategy.Attack(player, seenPos);  // Ataco
-                    RaiseTrigger(Shoot_Hash);
+                    RaiseBool(Shoot_Hash,true);
                 }
             }
             return;
@@ -341,7 +342,8 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         {
             agent.stoppingDistance = 0f;
 
-            agent.isStopped = false;
+            if (AgentIsValid())
+                agent.isStopped = false;
 
             Vector3 dest = _lastKnownPos;
             if (TryNearDetectPlayer(out var sensed) && IsReachable(sensed, out var navSensed))
@@ -349,16 +351,20 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
                 _lastKnownPos = navSensed;
                 dest = navSensed;
             }
-            agent.SetDestination(dest);
+            if (AgentIsValid())
+                agent.SetDestination(dest);
             FaceTowards(dest);
+            RaiseBool(Shoot_Hash, false);
             return;
         }
 
         agent.stoppingDistance = 0f;
-        agent.isStopped = false;
-        
-        agent.SetDestination(_lastKnownPos);                 // Linea de codigo que mueve al agente al LKP
-        RaiseBool(AimBool_Hash, false);
+        if (AgentIsValid())
+            agent.isStopped = false;
+
+        if (AgentIsValid())
+            agent.SetDestination(_lastKnownPos);                 // Linea de codigo que mueve al agente al LKP
+        RaiseBool(Shoot_Hash, false);
         if (!agent.pathPending && agent.remainingDistance <= waypointTolerance)
         {
             SetState(EnemyState.Suspicious);
@@ -367,7 +373,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
 
     }
 
-    protected virtual void SetState(EnemyState next) 
+    protected virtual void SetState(EnemyState next)
     {
         if (_state == next) return;
 
@@ -377,9 +383,10 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         {
             case EnemyState.Patrolling:
                 agent.stoppingDistance = 0f;
-                agent.isStopped = false;
+                if (AgentIsValid())
+                    agent.isStopped = false;
                 agent.updateRotation = true;
-                //RaiseAnimState(AnimState.Patrolling);
+                RaiseAnimState(AnimState.Patrolling);
                 break;
 
             case EnemyState.Suspicious:
@@ -388,7 +395,8 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
                 _scanTimer = 0f;
                 _movingToSuspicionPoint = true;
                 _pendingSuspicion = new List<Transform>(_suspiciousList);
-                agent.isStopped = false;
+                if (AgentIsValid())
+                    agent.isStopped = false;
                 agent.updateRotation = true;
                 RaiseAnimState(AnimState.Suspicious);
                 break;
@@ -396,7 +404,8 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
             case EnemyState.Danger:
                 _scanActive = false;
                 _movingToSuspicionPoint = false;
-                agent.isStopped = false;
+                if (AgentIsValid())
+                    agent.isStopped = false;
                 agent.updateRotation = true;
                 //RaiseAnimState(AnimState.Danger);
                 break;
@@ -410,7 +419,8 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         _pendingSuspicion = new List<Transform>(); // Vacia para que vaya directo al punto
         _movingToSuspicionPoint = true;
 
-        agent.isStopped = false;
+        if (AgentIsValid())
+            agent.isStopped = false;
         agent.updateRotation = true;
         agent.stoppingDistance = 0.1f;
         agent.SetDestination(worldPoint);
@@ -471,7 +481,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     private void AdvancePatrol()  // Patrulla si tengo puntos puestos en el inspector
     {
         if (patrolPoints == null || patrolPoints.Length == 0) return;
-        
+
         if (_patrolIndex >= patrolPoints.Length)
             _patrolIndex = 0;
         if (patrolPoints[_patrolIndex] == null) return;
@@ -560,15 +570,16 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         _scanActive = true;
         _scanTimer = 0f;
         RaiseAnimState(AnimState.Scan);
-        agent.isStopped = true;
+        if (AgentIsValid())
+            agent.isStopped = true;
         agent.updateRotation = false;  // Para que cuando llegue al LKP pueda scanear con mi codigo y no se mueva el agente solo
     }
     private void EndScan()
     {
         _scanActive = false;
-        RaiseAnimState(AnimState.Suspicious);
         agent.updateRotation = true;
-        agent.isStopped = false;
+        if (AgentIsValid())
+            agent.isStopped = false;
     }
     private bool UpdateScan()
     {
@@ -583,7 +594,8 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         if (_scanTimer >= scanDuration)
         {
             _scanActive = false;
-            agent.isStopped = false;
+            if (AgentIsValid())
+                agent.isStopped = false;
             agent.updateRotation = true;
             if (visionPivot) visionPivot.localRotation = _pivotBaseLocalRot;
             return true;
@@ -600,15 +612,22 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         Quaternion targetRot = Quaternion.LookRotation(dir, Vector3.up);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, turnSpeed * Time.deltaTime);
     }
+    bool AgentIsValid()
+    {
+        if (agent == null) return false;
+        if (!agent.isActiveAndEnabled) return false;
+        if (!agent.isOnNavMesh) return false;
 
+        return true;
+    }
     protected virtual void RaiseAnimState(AnimState st) => OnAnimState?.Invoke(st);
 
     protected virtual void RaiseTrigger(int hash) => OnAnimTrigger?.Invoke(hash);
-    protected virtual void RaiseBool(int paramHash, bool value) => OnAnimBool?.Invoke(paramHash,value);
+    protected virtual void RaiseBool(int paramHash, bool value) => OnAnimBool?.Invoke(paramHash, value);
 
     private void HandleDamaged_EnterDanger()
     {
-        if ( _enemyHealth == null || _enemyHealth.IsDead) return;
+        if (_enemyHealth == null || _enemyHealth.IsDead) return;
         StopCoroutine(nameof(DelayedEnterDanger)); // por si llega otro daño antes
         StartCoroutine(DelayedEnterDanger());
     }
