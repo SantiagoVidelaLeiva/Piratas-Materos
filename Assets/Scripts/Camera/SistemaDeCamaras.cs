@@ -10,6 +10,7 @@ public class SistemaDeCamaras : MonoBehaviour
     [SerializeField] private UIManager uiManager;                  // Referencia al UIManager
 
     private bool inSecurityMode = false;
+    public bool InSecurityMode => inSecurityMode;
     private int currentSecurityCamIndex = 0;
 
     void Start()
@@ -64,7 +65,7 @@ public class SistemaDeCamaras : MonoBehaviour
     {
         // Desactiva la cámara principal y los scripts del jugador
         if (thirdPersonCamera != null) thirdPersonCamera.enabled = false;
-        if (playerMovement != null) playerMovement.enabled = false;
+        if (playerMovement != null) playerMovement.enabled = true;
         if (cameraOrbit != null) cameraOrbit.enabled = false;
 
         // Activa la primera cámara de seguridad
