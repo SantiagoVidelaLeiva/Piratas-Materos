@@ -408,7 +408,6 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
                 if (AgentIsValid())
                     agent.isStopped = false;
                 agent.updateRotation = true;
-                RaiseAnimState(AnimState.Danger);
                 break;
         }
 
