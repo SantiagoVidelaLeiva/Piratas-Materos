@@ -71,7 +71,6 @@ public class SistemaDeCamaras : MonoBehaviour
         // Activa la primera cámara de seguridad
         if (securityCameras.Length > 0)
         {
-            currentSecurityCamIndex = 0;
             UpdateSecurityCameras();
             CheckForHackerInteractable();
         }
