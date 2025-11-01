@@ -17,7 +17,7 @@ public class Interactable : MonoBehaviour
 
         if (_interactableObject == null)
         {
-            UnityEngine.Debug.LogError("Interactable.cs requiere que un componente IInteractable esté en el mismo GameObject.", this);
+            UnityEngine.Debug.LogError("Interactable.cs requiere que un componente IInteractable estï¿½ en el mismo GameObject.", this);
             enabled = false;
         }
 
@@ -29,7 +29,7 @@ public class Interactable : MonoBehaviour
         if (_playerInRange && Input.GetKeyDown(KeyCode.E))  // Revisa si el jugador esta en rango
         {
             bool interactionIsFinal = _interactableObject.Interact();
-            
+
             if (interactionIsFinal)  // Si la interaccion es final
             {
                 if (_uiManager != null)
@@ -39,12 +39,13 @@ public class Interactable : MonoBehaviour
 
                 enabled = false;
             }
+            GetComponent<BoxCollider>().enabled = false;
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {     
-        if (other.CompareTag("Player"))   // Revisa si el objeto que entró en el trigger es el jugador.
+        if (other.CompareTag("Player"))   // Revisa si el objeto que entrï¿½ en el trigger es el jugador.
         {
             _playerInRange = true;
             if (_uiManager != null)
