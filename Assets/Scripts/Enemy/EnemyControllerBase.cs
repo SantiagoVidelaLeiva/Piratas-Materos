@@ -21,6 +21,8 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     [SerializeField] protected Transform eyes;
     [SerializeField] protected Transform player;
     [SerializeField] protected Transform nearDetect;
+    [SerializeField] protected BoxCollider takeDownCollider;
+
     [Header("Patrol")]
     [SerializeField] private Transform[] patrolPoints;
     [SerializeField] private float waypointTolerance = 2f;
@@ -60,6 +62,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
     //        Runtime State
     // ============================
     private EnemyState _state = EnemyState.Patrolling;
+    public EnemyState State => _state;
     public EnemyState CurrentState { get { return _state; } }
 
     public event Action<EnemyState> OnStateChange;
@@ -114,6 +117,9 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         if (!_enemyHealth)
             _enemyHealth = GetComponent<CharacterHealth>();
         _enemyHealth.OnDamaged += HandleDamaged_EnterDanger;
+
+        if (!takeDownCollider)
+            takeDownCollider = transform.GetComponentInChildren<BoxCollider>();
 
         NoiseSystem.OnNoise += OnNoiseHeard;
         health = GetComponent<CharacterHealth>();
@@ -180,7 +186,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
                 TickDanger(seesPlayer, seenPos);
                 break;
         }
-;
+
         float raw = new Vector3(agent.velocity.x, 0f, agent.velocity.z).magnitude;
         float norm = Mathf.InverseLerp(0f, chaseSpeed, raw);
         _smoothNorm = Mathf.Lerp(_smoothNorm, norm, Time.deltaTime * 5f);
@@ -198,6 +204,7 @@ public class EnemyControllerBase : MonoBehaviour, IVisionProvider
         enabled = false;
         if (agent && agent.isActiveAndEnabled)
             agent.enabled = false;
+        SetState(EnemyState.Patrolling);
     }
     // ============================
     //        State Machine
