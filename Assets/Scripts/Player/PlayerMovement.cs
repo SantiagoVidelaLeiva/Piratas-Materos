@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
 public class PlayerMovement : MonoBehaviour, IHeightProvider
@@ -36,6 +36,7 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
 
     [Header("Scripts")]
     [SerializeField] PlayerGravity _playerGravity;
+    private SistemaDeCamaras _camSystem;
     bool _wasAiming;
 
     public float GetEyeHeight() => IsCrouching ? _crouchingHeight : _standingHeight;
@@ -63,6 +64,7 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
         if (_visual) _visual.localPosition = new Vector3(0f, _visualYOffset, 0f);
 
         if (!_playerGravity) _playerGravity = GetComponent<PlayerGravity>();
+        if (!_camSystem) _camSystem = GameObject.Find("SistemaDeCamaras").GetComponent<SistemaDeCamaras>();
     }
 
     void Update()
@@ -84,10 +86,21 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
         Move();
     }
 
-    void Move()
+    public void Move()
     {
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
+        float h, v;
+
+        if (!_camSystem.InSecurityMode)
+        {
+            h = Input.GetAxis("Horizontal");
+            v = Input.GetAxis("Vertical");
+        }
+        else
+        {
+            h = 0;
+            v = 0;
+        }
+        
         Vector3 input = new(h, 0f, v);
         input = Vector3.ClampMagnitude(input, 1f); // Normalizo.
 
