@@ -46,7 +46,6 @@ public class RagdollController : MonoBehaviour
     }
     private void HandleDeath()
     {
-        Debug.Log("💀 RagdollController recibió evento OnDied");
         Vector3 force = _enemyHealth.LastHitForce;
         Vector3 hitPoint = _enemyHealth.LastHitPoint;
         var capsule = GetComponentInParent<CapsuleCollider>();
