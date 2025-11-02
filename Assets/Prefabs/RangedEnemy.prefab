@@ -522,7 +522,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4103406383544706003}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.68991023, z: -0, w: 0.72389495}
+  m_LocalRotation: {x: 0, y: 0.6899102, z: 0, w: 0.723895}
   m_LocalPosition: {x: -1.503, y: 3.66, z: 37.364}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1000,7 +1000,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &9098495647566678686
 Transform:
   m_ObjectHideFlags: 0
@@ -1057,7 +1057,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5194689619581981003}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 78859b1af84681348a83f724f5d4dbe5, type: 3}
   m_Name: 
@@ -1070,6 +1070,7 @@ MonoBehaviour:
   cameraOrbit: {fileID: 0}
   rigBuilder: {fileID: 0}
   aimDriver: {fileID: 0}
+  cameraRig: {fileID: 0}
   enemyAnimator: {fileID: 4826920476859844783}
   enemyRoot: {fileID: 9111605593932550647}
   enemyController: {fileID: 8126275665768445387}
