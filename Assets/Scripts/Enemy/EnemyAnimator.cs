@@ -21,7 +21,6 @@ public class EnemyAnimator : MonoBehaviour
     private static readonly int ScanHash = Animator.StringToHash("Rifle Scan");
     private static readonly int SpeedHash = Animator.StringToHash("Speed01");
     private AnimState _current;
-    int upperBodyLayerIdx;
 
     EnemyControllerBase _controller;
 
@@ -59,10 +58,6 @@ public class EnemyAnimator : MonoBehaviour
         }
     }
 
-    private void Start()
-    {
-        upperBodyLayerIdx = animator.GetLayerIndex("UpperBody");
-    }
     private void HandleSpeed(float norm)
     {
         animator.SetFloat(SpeedHash, norm, 0.10f, Time.deltaTime);
@@ -95,21 +90,10 @@ public class EnemyAnimator : MonoBehaviour
         animator.SetBool(paramHash, value);
     }
 
-    public void SetLayerWeight(float weight)
-    {
-        animator.SetLayerWeight(upperBodyLayerIdx, weight);
-    }
     public void PlayScanAnimation(int animHash, int layer = 0, float normalizedTime = 0f)
     {
         animator.Play(animHash, layer, normalizedTime);
     }
 
-    public bool IsUpperFiring()
-    {
-        if (upperBodyLayerIdx < 0) upperBodyLayerIdx = animator.GetLayerIndex("UpperBody");
-        var st = animator.GetCurrentAnimatorStateInfo(upperBodyLayerIdx);
-        var nx = animator.GetNextAnimatorStateInfo(upperBodyLayerIdx);
-        return st.IsTag("Firing") || nx.IsTag("Firing");
-    }
 
 }

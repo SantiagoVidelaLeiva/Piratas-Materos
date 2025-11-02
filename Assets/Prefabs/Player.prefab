@@ -169,10 +169,9 @@ GameObject:
   m_Component:
   - component: {fileID: 5230777923933570407}
   - component: {fileID: 1876012152236777785}
-  - component: {fileID: 5382957689144340516}
   - component: {fileID: 5588068318014708575}
-  - component: {fileID: 5164703256230711586}
   - component: {fileID: 3327302507190757637}
+  - component: {fileID: 5164703256230711586}
   m_Layer: 3
   m_Name: Model
   m_TagString: Untagged
@@ -220,18 +219,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &5382957689144340516
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 741089712163800096}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b7fd6045140e934f820fb1e116c4c66, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!135 &5588068318014708575
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -253,22 +240,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 1.2, z: 0.4}
---- !u!114 &5164703256230711586
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 741089712163800096}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fff0960ef4ea6e04eac66b4a7fd2189d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RigLayers:
-  - m_Rig: {fileID: 5028817511870392402}
-    m_Active: 1
-  m_Effectors: []
 --- !u!114 &3327302507190757637
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -292,6 +263,22 @@ MonoBehaviour:
   aimingWeight: 1
   hipWeight: 0
   verticalClamp: 45
+--- !u!114 &5164703256230711586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 741089712163800096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fff0960ef4ea6e04eac66b4a7fd2189d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RigLayers:
+  - m_Rig: {fileID: 5028817511870392402}
+    m_Active: 1
+  m_Effectors: []
 --- !u!1 &814443443616967095
 GameObject:
   m_ObjectHideFlags: 0
@@ -459,7 +446,6 @@ MonoBehaviour:
   weaponSocket: {fileID: 5361564232750515951}
   aimTarget: {fileID: 6009892237068170776}
   _yaw: 0
-  _aimLockLocalXZ: {x: -0.024, y: 0.0361}
   _lockSnap: 50
   _crosshair: {fileID: 0}
 --- !u!1 &900197852747288211
@@ -2923,6 +2909,7 @@ MonoBehaviour:
   impactLife: 3
   audioSource: {fileID: 0}
   shootClip: {fileID: 8300000, guid: c2122ac3ab32351449c67e5c08125164, type: 3}
+  hasPistol: 0
 --- !u!82 &6731210933708350157
 AudioSource:
   m_ObjectHideFlags: 0
