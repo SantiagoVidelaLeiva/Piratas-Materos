@@ -84,6 +84,7 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
     void FixedUpdate()
     {
         Move();
+        ApplyCustomGravity();
     }
 
     public void Move()
@@ -197,6 +198,15 @@ public class PlayerMovement : MonoBehaviour, IHeightProvider
         if (Input.GetKeyDown(_attackInput))
         {
             _anim.SetTrigger("Attack");
+        }
+    }
+
+    void ApplyCustomGravity()
+    {
+        // Aplicar gravedad manual si el rigidbody no usa la de Unity
+        if (!IsGrounded())
+        {
+            _rb.AddForce(Vector3.up * -9.81f, ForceMode.Acceleration);
         }
     }
 

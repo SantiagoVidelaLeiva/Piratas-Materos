@@ -53,7 +53,7 @@ public class CharacterHealth : MonoBehaviour, IDamageable
         LastHitForce = hitForce;
         LastHitRB = hitRB;
         Debug.Log($"{gameObject.name} recibi� {amount} de da�o. Vida actual: {currentHealth}");
-        OnDamaged?.Invoke();
+        //OnDamaged?.Invoke();
         if (currentHealth <= 0)
         {
             Die();
@@ -66,7 +66,7 @@ public class CharacterHealth : MonoBehaviour, IDamageable
         Debug.Log($"{gameObject.name} curado. Vida actual: {currentHealth}");
     }
 
-    protected  void Die()
+    public  void Die()
     {
         if (isDead) return; 
         isDead = true;
@@ -78,5 +78,11 @@ public class CharacterHealth : MonoBehaviour, IDamageable
 
         OnDied?.Invoke();
 
+    }
+    public void DieWithoutRagdoll()
+    {
+        isDead = true;
+        if (characterCanvas.activeSelf)
+            characterCanvas.SetActive(false);
     }
 }

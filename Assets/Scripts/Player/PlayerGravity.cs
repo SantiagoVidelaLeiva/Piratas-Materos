@@ -1,6 +1,5 @@
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterController))]
 public class PlayerGravity : MonoBehaviour
 {
     [Header("Gravedad")]
